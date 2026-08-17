@@ -5,7 +5,11 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <div className="page-width header-inner">
-        <Link className="brand" href="/" aria-label={`${siteConfig.name} home`}>
+        <Link
+          className="brand"
+          href="/"
+          aria-label={`${siteConfig.name} – ${siteConfig.productName}`}
+        >
           <svg viewBox="0 0 42 42" aria-hidden="true">
             <path d="M5 10h32v8l-7 5h-5v6h7v6H10v-6h7v-6h-5l-7-5z" />
           </svg>
