@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AnalyticsSettingsButton } from "@/components/site-analytics";
 import { siteConfig } from "@/lib/site-config";
 
 export function SiteFooter() {
@@ -15,6 +16,7 @@ export function SiteFooter() {
           <Link href="/terms">Terms</Link>
           <Link href="/disclaimer">Disclaimer</Link>
           <Link href="/licenses">Licenses</Link>
+          <AnalyticsSettingsButton />
           {siteConfig.contactEmail && <a href={`mailto:${siteConfig.contactEmail}`}>Contact</a>}
         </nav>
       </div>

@@ -8,7 +8,7 @@ import { siteConfig } from "@/lib/site-config";
 export const metadata: Metadata = {
   title: "Minecraft Enchantment Calculator – Best Anvil Order",
   description:
-    "Find the cheapest Minecraft anvil order, compare XP costs, and avoid Too Expensive. Free Java Edition enchantment planner with shareable steps.",
+    "Plan a lower-cost Minecraft anvil order, compare XP costs, and avoid Too Expensive. Free Java Edition enchantment planner with shareable steps.",
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
 };
@@ -23,7 +23,8 @@ const applicationSchema = {
   applicationCategory: "UtilitiesApplication",
   operatingSystem: "Any operating system with a modern web browser",
   browserRequirements: "Requires JavaScript and Web Worker support",
-  softwareVersion: siteConfig.gameVersion,
+  softwareVersion: siteConfig.productVersion,
+  softwareRequirements: `Minecraft ${siteConfig.edition} ${siteConfig.gameVersion}`,
   isAccessibleForFree: true,
 };
 

@@ -24,7 +24,25 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: { default: siteConfig.productName, template: `%s | ${siteConfig.name}` },
   description: "Plan Minecraft Java Edition anvil combinations with clear costs and shareable steps.",
-  icons: { icon: "/icons/anvil-mark.svg" },
+  applicationName: siteConfig.name,
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icons/anvil-mark.svg",
+    apple: "/apple-icon",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "/",
+    siteName: siteConfig.name,
+    title: siteConfig.productName,
+    description: "Plan Minecraft Java Edition anvil combinations with clear costs and shareable steps.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.productName,
+    description: "Plan Minecraft Java Edition anvil combinations with clear costs and shareable steps.",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
