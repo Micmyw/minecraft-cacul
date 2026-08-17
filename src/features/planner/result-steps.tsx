@@ -25,15 +25,15 @@ export function ResultSteps({
           <article className={`step-card ${band.className}`} key={step.id}>
             <div className="step-number">Step {index + 1}</div>
             <div className="merge-slots">
-              <div><span>Left slot</span><strong>{formatIngredient(step.left, catalog)}</strong></div>
-              <div><span>Right slot</span><strong>{formatIngredient(step.right, catalog)}</strong></div>
+              <div><span>Left slot</span><strong>{formatIngredient(step.left, catalog)}</strong><small>Left prior work: {step.left.priorWork}</small></div>
+              <div><span>Right slot</span><strong>{formatIngredient(step.right, catalog)}</strong><small>Right prior work: {step.right.priorWork}</small></div>
             </div>
             <svg className="merge-rail" viewBox="0 0 240 42" aria-hidden="true">
               <path d="M4 5h68l28 16h40l28-16h68M120 21v16" />
               <circle cx="120" cy="21" r="4" />
             </svg>
             <div className="step-result">
-              <div><span>Result</span><strong>{formatIngredient(step.result, catalog)}</strong></div>
+              <div><span>Result</span><strong>{formatIngredient(step.result, catalog)}</strong><small>New prior work: {step.result.priorWork}</small></div>
               <div className="step-cost"><span>Cost</span><strong>{step.levelCost} levels</strong></div>
             </div>
             {band.label && <p className="cost-note">{band.label}</p>}

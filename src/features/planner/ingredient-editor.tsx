@@ -1,4 +1,4 @@
-import type { Ingredient } from "@/domain/enchanting/types";
+import { MAX_PRIOR_WORK, type Ingredient } from "@/domain/enchanting/types";
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { EnchantmentPicker } from "./enchantment-picker";
 
@@ -15,12 +15,11 @@ export function IngredientEditor({
   onChange: (ingredient: Ingredient) => void;
   onRemove: () => void;
 }) {
-  const itemName = catalog.items.find((item) => item.id === targetItemId)?.name;
   return (
     <section className="ingredient-card">
       <div className="ingredient-title">
-        <span>{ingredient.kind === "book" ? "Book" : "Item"}</span>
-        <strong>{ingredient.kind === "book" ? "Enchanted Book" : itemName ?? "Same-type item"}</strong>
+        <span>Book</span>
+        <strong>Enchanted Book</strong>
         <button type="button" className="text-button danger" onClick={onRemove}>Remove</button>
       </div>
       <label className="field-label" htmlFor={`${ingredient.id}-prior-work`}>Prior-work count</label>
@@ -29,17 +28,24 @@ export function IngredientEditor({
         type="number"
         inputMode="numeric"
         min={0}
+        max={MAX_PRIOR_WORK}
         step={1}
         value={ingredient.priorWork}
-        onChange={(event) => onChange({ ...ingredient, priorWork: Math.max(0, Number(event.target.value)) })}
+        onChange={(event) => onChange({
+          ...ingredient,
+          priorWork: Math.min(
+            MAX_PRIOR_WORK,
+            Math.max(0, Math.trunc(Number(event.target.value) || 0)),
+          ),
+        })}
       />
       <EnchantmentPicker
         catalog={catalog}
         itemId={targetItemId}
         selected={ingredient.enchantments}
         onChange={(enchantments) => onChange({ ...ingredient, enchantments })}
-        label={ingredient.kind === "book" ? "Enchantments on this book" : "Enchantments on this item"}
-        allowAll={ingredient.kind === "book"}
+        label="Enchantments on this book"
+        allowAll
       />
     </section>
   );

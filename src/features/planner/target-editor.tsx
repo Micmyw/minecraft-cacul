@@ -1,4 +1,4 @@
-import type { Ingredient } from "@/domain/enchanting/types";
+import { MAX_PRIOR_WORK, type Ingredient } from "@/domain/enchanting/types";
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { EnchantmentPicker } from "./enchantment-picker";
 
@@ -40,9 +40,16 @@ export function TargetEditor({
         type="number"
         inputMode="numeric"
         min={0}
+        max={MAX_PRIOR_WORK}
         step={1}
         value={target.priorWork}
-        onChange={(event) => onChange({ ...target, priorWork: Math.max(0, Number(event.target.value)) })}
+        onChange={(event) => onChange({
+          ...target,
+          priorWork: Math.min(
+            MAX_PRIOR_WORK,
+            Math.max(0, Math.trunc(Number(event.target.value) || 0)),
+          ),
+        })}
       />
       <EnchantmentPicker
         catalog={catalog}

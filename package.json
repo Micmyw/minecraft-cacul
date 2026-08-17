@@ -4,7 +4,7 @@
   "type": "module",
   "private": true,
   "engines": {
-    "node": ">=20.9.0"
+    "node": "24.x"
   },
   "packageManager": "pnpm@11.5.2",
   "scripts": {

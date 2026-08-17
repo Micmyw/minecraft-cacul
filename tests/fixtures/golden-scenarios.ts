@@ -57,17 +57,28 @@ function normalized(left: string, right: string, cost: number): string {
   return `${left}>${right}@${cost}`;
 }
 
-const eightBooks = Array.from({ length: 8 }, (_, index) =>
-  enchantedBook(`book-${index + 1}`, 3, {
-    enchantments: [{ enchantmentId: "unbreaking", level: 3 }],
-  }),
-);
+const eightBooks = [
+  ["sharpness", 5],
+  ["looting", 3],
+  ["sweeping_edge", 3],
+  ["knockback", 2],
+  ["fire_aspect", 2],
+  ["unbreaking", 3],
+  ["mending", 1],
+  ["vanishing_curse", 1],
+].map(([id, level]) => enchantedBook(id as string, level as number));
 
-const nineBooks = Array.from({ length: 9 }, (_, index) =>
-  enchantedBook(`book-${index + 1}`, 3, {
-    enchantments: [{ enchantmentId: "unbreaking", level: 3 }],
-  }),
-);
+const nineBooks = [
+  ["protection", 4],
+  ["binding_curse", 1],
+  ["depth_strider", 3],
+  ["feather_falling", 4],
+  ["mending", 1],
+  ["soul_speed", 3],
+  ["thorns", 3],
+  ["unbreaking", 3],
+  ["vanishing_curse", 1],
+].map(([id, level]) => enchantedBook(id as string, level as number));
 
 /**
  * Fixed v1 acceptance scenarios. The first six were captured from the pinned
@@ -266,7 +277,10 @@ export const goldenSolveScenarios: readonly GoldenSolveScenario[] = [
     name: "nine-sacrifice heuristic boundary",
     source: "validation-boundary",
     rationale: "Nine sacrifices must use deterministic Best Found search.",
-    request: request({ sacrifices: nineBooks }),
+    request: request({
+      target: ingredient({ id: "target", kind: "target", itemId: "boots" }),
+      sacrifices: nineBooks,
+    }),
     expected: { status: "success", quality: "best-found" },
   },
   {
@@ -289,13 +303,6 @@ export const goldenSolveScenarios: readonly GoldenSolveScenario[] = [
     rationale: "A target by itself is not a plan.",
     request: request({ sacrifices: [] }),
     expected: { status: "invalid-input", errorIncludes: "Add at least one" },
-  },
-  {
-    name: "same-type item sacrifice",
-    source: "anvilpilot-extension",
-    rationale: "Inventory supports Item to same-type Item in the target-preserving direction.",
-    request: request({ sacrifices: [ingredient({ id: "sword-item", kind: "item", enchantments: [{ enchantmentId: "sharpness", level: 5 }] })] }),
-    expected: { status: "success", quality: "exact-optimal", totalLevels: 5, stepCosts: [5], finalPriorWork: 1 },
   },
   {
     name: "same-level enchantments upgrade",

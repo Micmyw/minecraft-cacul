@@ -1,3 +1,4 @@
+import { MAX_PRIOR_WORK, MAX_SACRIFICES } from "@/domain/enchanting/types";
 import type {
   CatalogSnapshot,
   EnchantmentLevel,
@@ -39,7 +40,7 @@ function isIngredient(value: unknown): value is Ingredient {
   if (!isRecord(value)) return false;
   return (
     typeof value.id === "string" &&
-    (value.kind === "target" || value.kind === "book" || value.kind === "item") &&
+    (value.kind === "target" || value.kind === "book") &&
     (typeof value.itemId === "string" || value.itemId === null) &&
     Array.isArray(value.enchantments) &&
     value.enchantments.every(isEnchantmentLevel) &&
@@ -94,11 +95,15 @@ export function parsePlanStateObject(
     return { ok: false, error: "The plan has an unknown planner mode." };
   }
 
-  if (!requireSolvable || !catalog) return { ok: true, state };
+  if (!catalog) return { ok: true, state };
 
   const itemId =
     state.plannerMode === "quick" ? state.targetItemId : state.target.itemId;
-  if (!itemId || !catalog.items.some((item) => item.id === itemId)) {
+  const catalogItemId = itemId ?? "";
+  if (
+    (requireSolvable && !itemId) ||
+    (itemId && !catalog.items.some((item) => item.id === itemId))
+  ) {
     return { ok: false, error: `Unknown item "${itemId ?? ""}".` };
   }
   const allEnchantments =
@@ -107,6 +112,10 @@ export function parsePlanStateObject(
       : [state.target, ...state.sacrifices].flatMap(
           (ingredient) => ingredient.enchantments,
         );
+  const targetEnchantmentIds =
+    state.plannerMode === "inventory"
+      ? state.target.enchantments.map((enchantment) => enchantment.enchantmentId)
+      : [];
   for (const enchantment of allEnchantments) {
     const definition = catalog.enchantments.find(
       (item) => item.id === enchantment.enchantmentId,
@@ -118,7 +127,7 @@ export function parsePlanStateObject(
       };
     }
     if (
-      !Number.isInteger(enchantment.level) ||
+      !Number.isSafeInteger(enchantment.level) ||
       enchantment.level < 1 ||
       enchantment.level > definition.maxLevel
     ) {
@@ -129,7 +138,7 @@ export function parsePlanStateObject(
     }
   }
   if (state.plannerMode === "quick") {
-    if (state.enchantments.length === 0) {
+    if (requireSolvable && state.enchantments.length === 0) {
       return { ok: false, error: "Add at least one enchantment." };
     }
     if (
@@ -145,7 +154,7 @@ export function parsePlanStateObject(
       const definition = catalog.enchantments.find(
         (item) => item.id === enchantment.enchantmentId,
       )!;
-      if (!definition.supportedItemIds.includes(state.targetItemId)) {
+      if (state.targetItemId && !definition.supportedItemIds.includes(state.targetItemId)) {
         return {
           ok: false,
           error: `${definition.name} cannot be applied to the selected item.`,
@@ -156,42 +165,44 @@ export function parsePlanStateObject(
     if (state.target.kind !== "target") {
       return { ok: false, error: "Select exactly one target item." };
     }
-    if (state.sacrifices.length === 0) {
+    if (requireSolvable && state.sacrifices.length === 0) {
       return {
         ok: false,
-        error: "Add at least one enchanted book or same-type item.",
+        error: "Add at least one enchanted book.",
       };
     }
-    if (state.sacrifices.length > 32) {
-      return { ok: false, error: "A plan can contain at most 32 sacrifices." };
+    if (state.sacrifices.length > MAX_SACRIFICES) {
+      return {
+        ok: false,
+        error: `A plan can contain at most ${MAX_SACRIFICES} sacrifices.`,
+      };
     }
     const ids = [state.target, ...state.sacrifices].map((item) => item.id);
     if (ids.some((id) => id.length === 0) || new Set(ids).size !== ids.length) {
       return { ok: false, error: "Each ingredient must have a unique id." };
     }
     for (const ingredient of [state.target, ...state.sacrifices]) {
-      if (!Number.isInteger(ingredient.priorWork) || ingredient.priorWork < 0) {
+      if (
+        !Number.isSafeInteger(ingredient.priorWork) ||
+        ingredient.priorWork < 0 ||
+        ingredient.priorWork > MAX_PRIOR_WORK
+      ) {
         return {
           ok: false,
-          error: `${ingredient.id} prior work must be 0 or a positive integer.`,
+          error: `${ingredient.id} prior work must be a safe integer between 0 and ${MAX_PRIOR_WORK}.`,
         };
       }
-      if (ingredient !== state.target && ingredient.kind === "target") {
-        return { ok: false, error: "A sacrifice cannot be another target item." };
+      if (ingredient !== state.target && ingredient.kind !== "book") {
+        return { ok: false, error: "Every sacrifice must be an enchanted book." };
       }
       if (ingredient.kind === "book" && ingredient.itemId !== null) {
         return { ok: false, error: `Book ${ingredient.id} cannot have an item type.` };
       }
       if (
-        ingredient.kind === "item" &&
-        ingredient.itemId !== state.target.itemId
+        requireSolvable &&
+        ingredient !== state.target &&
+        ingredient.enchantments.length === 0
       ) {
-        return {
-          ok: false,
-          error: `Item ${ingredient.id} must be the same type as the target.`,
-        };
-      }
-      if (ingredient !== state.target && ingredient.enchantments.length === 0) {
         return {
           ok: false,
           error: `${ingredient.id} must contain at least one enchantment.`,
@@ -206,21 +217,29 @@ export function parsePlanStateObject(
           error: `${ingredient.id} contains a duplicate enchantment.`,
         };
       }
-      const applicable = ingredient.enchantments.filter((enchantment) =>
-        catalog.enchantments
-          .find((definition) => definition.id === enchantment.enchantmentId)
-          ?.supportedItemIds.includes(itemId),
-      );
-      if (ingredient.kind === "book" && applicable.length === 0) {
+      const applicable = ingredient.enchantments.filter((enchantment) => {
+        const definition = catalog.enchantments.find(
+          (entry) => entry.id === enchantment.enchantmentId,
+        );
+        return (
+          definition?.supportedItemIds.includes(catalogItemId) &&
+          (ingredient.kind === "target" ||
+            targetEnchantmentIds.every(
+              (targetId) => !definition.incompatibleWith.includes(targetId),
+            ))
+        );
+      });
+      if (
+        requireSolvable &&
+        ingredient.kind === "book" &&
+        applicable.length === 0
+      ) {
         return {
           ok: false,
           error: `Book ${ingredient.id} has no enchantment that can apply to the selected item.`,
         };
       }
-      if (
-        ingredient.kind !== "book" &&
-        applicable.length !== ingredient.enchantments.length
-      ) {
+      if (ingredient.kind === "target" && applicable.length !== ingredient.enchantments.length) {
         return {
           ok: false,
           error: `${ingredient.id} contains an enchantment that cannot apply to the selected item.`,
@@ -229,12 +248,23 @@ export function parsePlanStateObject(
     }
   }
 
+  if (!requireSolvable) return { ok: true, state };
+
   const applicableIds = new Set(
     allEnchantments
       .filter((enchantment) =>
-        catalog.enchantments
-          .find((definition) => definition.id === enchantment.enchantmentId)
-          ?.supportedItemIds.includes(itemId),
+        (() => {
+          const definition = catalog.enchantments.find(
+            (entry) => entry.id === enchantment.enchantmentId,
+          );
+          return (
+            definition?.supportedItemIds.includes(catalogItemId) &&
+            (targetEnchantmentIds.includes(enchantment.enchantmentId) ||
+              targetEnchantmentIds.every(
+                (targetId) => !definition.incompatibleWith.includes(targetId),
+              ))
+          );
+        })(),
       )
       .map((enchantment) => enchantment.enchantmentId),
   );

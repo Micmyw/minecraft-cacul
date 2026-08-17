@@ -4,6 +4,9 @@ import { describe, expect, it, vi } from "vitest";
 import { EnchantmentPicker } from "@/features/planner/enchantment-picker";
 import { PlannerTabs } from "@/features/planner/planner-tabs";
 import { ResultSummary } from "@/features/planner/result-summary";
+import { ResultSteps } from "@/features/planner/result-steps";
+import { formatStepsForClipboard } from "@/features/planner/planner-format";
+import type { CombineStep } from "@/domain/enchanting/types";
 import type { CatalogSnapshot } from "@/workers/protocol";
 
 const catalog: CatalogSnapshot = {
@@ -87,5 +90,46 @@ describe("planner UI", () => {
       />,
     );
     expect(screen.getByText("Uses 5 more levels to preserve future work.")).toBeInTheDocument();
+  });
+
+  it("shows prior work for both slots and the result in UI and copied text", () => {
+    const step: CombineStep = {
+      id: "step-1",
+      left: {
+        id: "target",
+        kind: "target",
+        itemId: "sword",
+        enchantments: [],
+        priorWork: 1,
+      },
+      right: {
+        id: "book",
+        kind: "book",
+        itemId: null,
+        enchantments: [{ enchantmentId: "sharpness", level: 5 }],
+        priorWork: 2,
+      },
+      result: {
+        id: "(target+book)",
+        kind: "target",
+        itemId: "sword",
+        enchantments: [{ enchantmentId: "sharpness", level: 5 }],
+        priorWork: 3,
+      },
+      levelCost: 8,
+      legalInSurvival: true,
+    };
+
+    render(<ResultSteps steps={[step]} catalog={catalog} />);
+    expect(screen.getByText("Left prior work: 1")).toBeInTheDocument();
+    expect(screen.getByText("Right prior work: 2")).toBeInTheDocument();
+    expect(screen.getByText("New prior work: 3")).toBeInTheDocument();
+
+    expect(formatStepsForClipboard([step], catalog)).toContain(
+      "Left prior work: 1\nRight slot: Book — Sharpness V\nRight prior work: 2",
+    );
+    expect(formatStepsForClipboard([step], catalog)).toContain(
+      "New prior work: 3",
+    );
   });
 });

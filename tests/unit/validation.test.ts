@@ -9,7 +9,7 @@ describe("solve request validation", () => {
 
   it("requires at least one sacrifice", () => {
     expect(validateSolveRequest(request({ sacrifices: [] }))).toContain(
-      "Add at least one enchanted book or same-type item.",
+      "Add at least one enchanted book.",
     );
   });
 
@@ -44,13 +44,13 @@ describe("solve request validation", () => {
   it("rejects incompatible enchantments across ingredients", () => {
     const errors = validateSolveRequest(
       request({
-        target: ingredient({
-          id: "target",
-          kind: "target",
-          enchantments: [{ enchantmentId: "fortune", level: 3 }],
-          itemId: "pickaxe",
-        }),
+        target: ingredient({ id: "target", kind: "target", itemId: "pickaxe" }),
         sacrifices: [
+          ingredient({
+            id: "fortune",
+            kind: "book",
+            enchantments: [{ enchantmentId: "fortune", level: 3 }],
+          }),
           ingredient({
             id: "silk",
             kind: "book",
@@ -76,7 +76,7 @@ describe("solve request validation", () => {
           ],
         }),
       ),
-    ).toContain("Book power has no enchantment that can apply to Sword.");
+    ).toContain("Book power has no enchantment that can apply to Sword without conflicting with the target.");
   });
 
   it("limits Inventory plans to 32 sacrifices", () => {

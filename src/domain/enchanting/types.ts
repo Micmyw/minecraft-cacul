@@ -6,7 +6,11 @@ export type EnchantmentLevel = {
   level: number;
 };
 
-export type IngredientKind = "target" | "book" | "item";
+export type IngredientKind = "target" | "book";
+
+// V1 deliberately exposes books as the only sacrifice kind. Keeping this
+// alias makes a future equipment-sacrifice extension explicit and localized.
+export type InventorySacrificeKind = Extract<IngredientKind, "book">;
 
 export type Ingredient = {
   id: string;
@@ -72,6 +76,9 @@ export type SolveResult =
 
 export const EXACT_SEARCH_MAX_INGREDIENTS = 8;
 export const MAX_SACRIFICES = 32;
+// With at most 32 sacrifices, this keeps every reachable 2^n - 1 penalty
+// within Number.MAX_SAFE_INTEGER, including a fully sequential merge chain.
+export const MAX_PRIOR_WORK = 20;
 
 export type QuickPlanStateV1 = {
   schemaVersion: 1;

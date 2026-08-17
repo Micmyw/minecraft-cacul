@@ -1,10 +1,10 @@
-import type { Ingredient, IngredientKind } from "@/domain/enchanting/types";
+import type { Ingredient, InventorySacrificeKind } from "@/domain/enchanting/types";
 import type { InventoryPlanStateV1 } from "@/lib/share-state";
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { IngredientEditor } from "./ingredient-editor";
 import { TargetEditor } from "./target-editor";
 
-function nextId(kind: IngredientKind, ingredients: Ingredient[]): string {
+function nextId(kind: InventorySacrificeKind, ingredients: Ingredient[]): string {
   let index = 1;
   while (ingredients.some((item) => item.id === `${kind}-${index}`)) index += 1;
   return `${kind}-${index}`;
@@ -20,27 +20,14 @@ export function InventoryPlanner({
   onChange: (state: InventoryPlanStateV1) => void;
 }) {
   const updateTarget = (target: Ingredient) => {
-    const sacrifices = state.sacrifices.map((ingredient) =>
-      ingredient.kind === "item"
-        ? {
-            ...ingredient,
-            itemId: target.itemId,
-            enchantments: ingredient.enchantments.filter((selected) =>
-              catalog.enchantments
-                .find((entry) => entry.id === selected.enchantmentId)
-                ?.supportedItemIds.includes(target.itemId ?? ""),
-            ),
-          }
-        : ingredient,
-    );
-    onChange({ ...state, target, sacrifices });
+    onChange({ ...state, target });
   };
-  const addIngredient = (kind: "book" | "item") => {
+  const addIngredient = (kind: InventorySacrificeKind) => {
     if (state.sacrifices.length >= 32) return;
     const ingredient: Ingredient = {
       id: nextId(kind, state.sacrifices),
       kind,
-      itemId: kind === "book" ? null : state.target.itemId,
+      itemId: null,
       enchantments: [],
       priorWork: 0,
     };
@@ -75,7 +62,6 @@ export function InventoryPlanner({
       </div>
       <div className="add-ingredient-actions">
         <button type="button" onClick={() => addIngredient("book")} disabled={state.sacrifices.length >= 32}>+ Add enchanted book</button>
-        <button type="button" className="secondary-button" onClick={() => addIngredient("item")} disabled={!state.target.itemId || state.sacrifices.length >= 32}>+ Add same-type item</button>
         <span>{state.sacrifices.length} / 32 materials</span>
       </div>
     </div>

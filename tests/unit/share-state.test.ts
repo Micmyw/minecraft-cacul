@@ -100,10 +100,9 @@ describe("share state", () => {
       target: ingredient({ id: "target", kind: "target", priorWork: -1 }),
       sacrifices: [
         ingredient({
-          id: "wrong-item",
-          kind: "item",
-          itemId: "bow",
-          enchantments: [{ enchantmentId: "power", level: 5 }],
+          id: "book",
+          kind: "book",
+          enchantments: [{ enchantmentId: "mending", level: 1 }],
         }),
       ],
     };

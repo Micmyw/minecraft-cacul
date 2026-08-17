@@ -23,7 +23,7 @@ export default function AboutPage() {
       <h2>What it calculates</h2>
       <p>
         The calculator models enchantment transfer costs, compatibility, prior-work
-        penalties, book combinations, and same-type equipment sacrifices. Every
+        penalties and enchanted-book combinations. Every
         recommended step names the left slot, right slot, cost, and result.
       </p>
       <h2>How result quality is labeled</h2>

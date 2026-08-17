@@ -12,9 +12,42 @@ function books(count: number) {
   );
 }
 
+function distinctBooks(enchantments: ReadonlyArray<readonly [string, number]>) {
+  return enchantments.map(([enchantmentId, level]) =>
+    ingredient({
+      id: `book-${enchantmentId}`,
+      kind: "book",
+      enchantments: [{ enchantmentId, level }],
+    }),
+  );
+}
+
+const exactSwordBooks = distinctBooks([
+  ["sharpness", 5],
+  ["looting", 3],
+  ["sweeping_edge", 3],
+  ["knockback", 2],
+  ["fire_aspect", 2],
+  ["unbreaking", 3],
+  ["mending", 1],
+  ["vanishing_curse", 1],
+]);
+
+const heuristicBootsBooks = distinctBooks([
+  ["protection", 4],
+  ["binding_curse", 1],
+  ["depth_strider", 3],
+  ["feather_falling", 4],
+  ["mending", 1],
+  ["soul_speed", 3],
+  ["thorns", 3],
+  ["unbreaking", 3],
+  ["vanishing_curse", 1],
+]);
+
 describe("enchantment solver", () => {
   it("returns an exact optimum through eight sacrifices", async () => {
-    const result = await solve(request({ sacrifices: books(8) }));
+    const result = await solve(request({ sacrifices: exactSwordBooks }));
 
     expect(result.status).toBe("success");
     if (result.status !== "success") return;
@@ -27,10 +60,18 @@ describe("enchantment solver", () => {
     expect(result.highestStepCost).toBe(
       Math.max(...result.steps.map((step) => step.levelCost)),
     );
-  }, 20_000);
+    expect(new Set(exactSwordBooks.map((book) => book.enchantments[0].enchantmentId)).size).toBe(8);
+    expect(result.statistics.exploredStates).toBeGreaterThan(0);
+    console.info(
+      `EXACT_8_METRICS elapsedMs=${result.statistics.elapsedMs} exploredStates=${result.statistics.exploredStates}`,
+    );
+  }, 60_000);
 
   it("labels nine sacrifices as deterministic Best Found", async () => {
-    const solveRequest = request({ sacrifices: books(9) });
+    const solveRequest = request({
+      target: ingredient({ id: "target", kind: "target", itemId: "boots" }),
+      sacrifices: heuristicBootsBooks,
+    });
     const first = await solve(solveRequest);
     const second = await solve(solveRequest);
 
@@ -39,6 +80,7 @@ describe("enchantment solver", () => {
     if (first.status !== "success" || second.status !== "success") return;
     expect(first.quality).toBe("best-found");
     expect(first.statistics.exactSearch).toBe(false);
+    expect(new Set(heuristicBootsBooks.map((book) => book.enchantments[0].enchantmentId)).size).toBe(9);
     expect({ ...first, statistics: undefined }).toEqual({
       ...second,
       statistics: undefined,
@@ -106,7 +148,7 @@ describe("enchantment solver", () => {
     const result = await solve(request({ sacrifices: [] }));
     expect(result).toEqual({
       status: "invalid-input",
-      errors: ["Add at least one enchanted book or same-type item."],
+      errors: ["Add at least one enchanted book."],
     });
   });
 

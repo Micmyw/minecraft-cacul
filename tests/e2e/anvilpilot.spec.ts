@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const SAVED_PLAN_KEY = "anvilpilot:plan:v1";
+const SAVED_PLAN_KEY = "anvilpilot:planner:v2";
 const browserErrors = new WeakMap<Page, string[]>();
 
 function planHash(state: unknown): string {
@@ -64,6 +64,15 @@ test("Quick Plan calculates, focuses results, and restores a share link", async 
   await expect(page.locator(".quality-badge", { hasText: "Exact Optimal" })).toBeVisible();
   await expect(page.getByText("Total Levels").locator("..").getByText("8", { exact: true })).toBeVisible();
   await expect(page.locator(".result-panel")).toBeFocused();
+  await expect(page.getByText("Left prior work: 0").first()).toBeVisible();
+  await expect(page.getByText("Right prior work: 0").first()).toBeVisible();
+  await expect(page.getByText(/New prior work: [1-9]/u).first()).toBeVisible();
+
+  await page.getByRole("button", { name: "Copy Steps" }).click();
+  const copiedSteps = await page.evaluate(() => navigator.clipboard.readText());
+  expect(copiedSteps).toContain("Left prior work: 0");
+  expect(copiedSteps).toContain("Right prior work: 0");
+  expect(copiedSteps).toMatch(/New prior work: [1-9]/u);
 
   await page.getByRole("button", { name: "Copy Share Link" }).click();
   await expect.poll(() => page.evaluate(() => window.location.hash)).toMatch(/^#plan=v1\./u);
@@ -71,7 +80,9 @@ test("Quick Plan calculates, focuses results, and restores a share link", async 
   await page.goto(sharedUrl);
   await expect(page.getByLabel("Target item")).toHaveValue("sword");
   await expect(page.getByText("Sharpness", { exact: true })).toBeVisible();
-  await expect(page.getByText("Mending", { exact: true })).toBeVisible();
+  await expect(
+    page.locator(".selected-enchantments").getByText("Mending", { exact: true }),
+  ).toBeVisible();
 });
 
 test("Inventory Plan accepts a mixed book and warns about discarded enchantments", async ({ page }) => {
@@ -89,6 +100,33 @@ test("Inventory Plan accepts a mixed book and warns about discarded enchantments
   await expect(page.getByRole("heading", { name: "Your anvil work order" })).toBeVisible();
   await expect(page.getByText("Total Levels").locator("..").getByText("9", { exact: true })).toBeVisible();
   await expect(page.getByText(/Power V was not applicable to Sword and was discarded/u)).toBeVisible();
+});
+
+test("Quick and Inventory keep independent drafts across tab switches", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Target item").selectOption("sword");
+  await page.getByLabel("Add enchantment").selectOption("sharpness");
+
+  await page.getByRole("tab", { name: "Inventory Plan" }).click();
+  await page.getByLabel("Target item").selectOption("pickaxe");
+  await page.getByRole("button", { name: "+ Add enchanted book" }).click();
+  await page
+    .getByRole("group", { name: "Enchantments on this book" })
+    .getByLabel("Add enchantment")
+    .last()
+    .selectOption("mending");
+  await page.locator("#book-1-prior-work").fill("2");
+
+  await page.getByRole("tab", { name: "Quick Plan" }).click();
+  await expect(page.getByLabel("Target item")).toHaveValue("sword");
+  await expect(page.getByText("Sharpness", { exact: true })).toBeVisible();
+
+  await page.getByRole("tab", { name: "Inventory Plan" }).click();
+  await expect(page.getByLabel("Target item")).toHaveValue("pickaxe");
+  await expect(page.locator("#book-1-prior-work")).toHaveValue("2");
+  await expect(
+    page.locator(".selected-enchantments").getByText("Mending", { exact: true }),
+  ).toBeVisible();
 });
 
 test("validation and Too Expensive diagnostics are visible", async ({ page }) => {

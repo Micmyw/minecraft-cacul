@@ -1,90 +1,30 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Ingredient, SolveResult } from "@/domain/enchanting/types";
-import { clearSavedPlan, loadSavedPlan, savePlan } from "@/lib/local-storage";
+import type { SolveResult } from "@/domain/enchanting/types";
+import {
+  clearSavedPlan,
+  createDefaultPlannerDrafts,
+  loadSavedPlan,
+  savePlan,
+  type PlannerDraftsV2,
+} from "@/lib/local-storage";
 import {
   decodePlanState,
   encodePlanState,
   planStateToSolveRequest,
-  type InventoryPlanStateV1,
   type PlanStateV1,
-  type QuickPlanStateV1,
 } from "@/lib/share-state";
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { EnchantmentSolverClient } from "@/workers/worker-client";
 import { CalculateButton } from "./calculate-button";
 import { InventoryPlanner } from "./inventory-planner";
 import { OptimizationMode } from "./optimization-mode";
-import { formatIngredient } from "./planner-format";
+import { formatStepsForClipboard } from "./planner-format";
 import { PlannerTabs, type PlannerMode } from "./planner-tabs";
 import { QuickPlanner } from "./quick-planner";
 import { ResultSteps } from "./result-steps";
 import { ResultSummary } from "./result-summary";
-
-const defaultQuick = (): QuickPlanStateV1 => ({
-  schemaVersion: 1,
-  plannerMode: "quick",
-  optimizeMode: "least-total-levels",
-  targetItemId: "",
-  enchantments: [],
-});
-
-function quickToInventory(state: QuickPlanStateV1): InventoryPlanStateV1 {
-  return {
-    schemaVersion: 1,
-    plannerMode: "inventory",
-    optimizeMode: state.optimizeMode,
-    target: {
-      id: "target",
-      kind: "target",
-      itemId: state.targetItemId || null,
-      enchantments: [],
-      priorWork: 0,
-    },
-    sacrifices: state.enchantments.map((enchantment) => ({
-      id: `book-${enchantment.enchantmentId}`,
-      kind: "book" as const,
-      itemId: null,
-      enchantments: [{ ...enchantment }],
-      priorWork: 0,
-    })),
-  };
-}
-
-function inventoryToQuick(
-  state: InventoryPlanStateV1,
-  catalog: CatalogSnapshot,
-): QuickPlanStateV1 {
-  const targetItemId = state.target.itemId ?? "";
-  const selected = new Map<string, number>();
-  const sources: Ingredient[] = [state.target, ...state.sacrifices];
-  for (const enchantment of sources.flatMap((source) => source.enchantments)) {
-    const definition = catalog.enchantments.find(
-      (item) => item.id === enchantment.enchantmentId,
-    );
-    if (!definition?.supportedItemIds.includes(targetItemId)) continue;
-    const conflicts = [...selected.keys()].some((id) =>
-      definition.incompatibleWith.includes(id),
-    );
-    if (!conflicts) {
-      selected.set(
-        enchantment.enchantmentId,
-        Math.max(selected.get(enchantment.enchantmentId) ?? 0, enchantment.level),
-      );
-    }
-  }
-  return {
-    schemaVersion: 1,
-    plannerMode: "quick",
-    optimizeMode: state.optimizeMode,
-    targetItemId,
-    enchantments: [...selected].map(([enchantmentId, level]) => ({
-      enchantmentId,
-      level,
-    })),
-  };
-}
 
 async function copyText(value: string): Promise<void> {
   if (navigator.clipboard?.writeText) {
@@ -104,7 +44,7 @@ async function copyText(value: string): Promise<void> {
 
 export function CalculatorShell() {
   const [catalog, setCatalog] = useState<CatalogSnapshot | null>(null);
-  const [state, setState] = useState<PlanStateV1>(defaultQuick);
+  const [drafts, setDrafts] = useState<PlannerDraftsV2>(createDefaultPlannerDrafts);
   const [hydrated, setHydrated] = useState(false);
   const [result, setResult] = useState<SolveResult | null>(null);
   const [calculating, setCalculating] = useState(false);
@@ -113,6 +53,8 @@ export function CalculatorShell() {
   const [error, setError] = useState("");
   const clientRef = useRef<EnchantmentSolverClient | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+  const state: PlanStateV1 =
+    drafts.plannerMode === "quick" ? drafts.quick : drafts.inventory;
 
   useEffect(() => {
     const client = new EnchantmentSolverClient();
@@ -128,14 +70,19 @@ export function CalculatorShell() {
         if (encoded) {
           const decoded = decodePlanState(encoded, nextCatalog);
           if (decoded.ok) {
-            setState(decoded.state);
+            const empty = createDefaultPlannerDrafts();
+            setDrafts(
+              decoded.state.plannerMode === "quick"
+                ? { ...empty, plannerMode: "quick", quick: decoded.state }
+                : { ...empty, plannerMode: "inventory", inventory: decoded.state },
+            );
             setError("");
           } else {
-            setState(defaultQuick());
+            setDrafts(createDefaultPlannerDrafts());
             setError(decoded.error);
           }
         } else {
-          setState(loadSavedPlan() ?? defaultQuick());
+          setDrafts(loadSavedPlan(nextCatalog) ?? createDefaultPlannerDrafts());
         }
         setResult(null);
         setHydrated(true);
@@ -154,8 +101,12 @@ export function CalculatorShell() {
   }, []);
 
   useEffect(() => {
-    if (hydrated) savePlan(state);
-  }, [hydrated, state]);
+    if (!hydrated) return;
+    const saved = savePlan(drafts);
+    if (!saved.ok) {
+      queueMicrotask(() => setError(saved.error));
+    }
+  }, [drafts, hydrated]);
 
   const updateState = (nextState: PlanStateV1) => {
     clientRef.current?.cancelActive();
@@ -163,16 +114,21 @@ export function CalculatorShell() {
     setProgress(0);
     setResult(null);
     setError("");
-    setState(nextState);
+    setDrafts((current) =>
+      nextState.plannerMode === "quick"
+        ? { ...current, plannerMode: "quick", quick: nextState }
+        : { ...current, plannerMode: "inventory", inventory: nextState },
+    );
   };
 
   const changeMode = (mode: PlannerMode) => {
-    if (!catalog || mode === state.plannerMode) return;
-    updateState(
-      mode === "inventory"
-        ? quickToInventory(state as QuickPlanStateV1)
-        : inventoryToQuick(state as InventoryPlanStateV1, catalog),
-    );
+    if (mode === drafts.plannerMode) return;
+    clientRef.current?.cancelActive();
+    setCalculating(false);
+    setProgress(0);
+    setResult(null);
+    setError("");
+    setDrafts((current) => ({ ...current, plannerMode: mode }));
   };
 
   const calculate = async () => {
@@ -225,12 +181,7 @@ export function CalculatorShell() {
   const copySteps = async () => {
     if (!result || !catalog || result.status === "invalid-input") return;
     const steps = result.status === "success" ? result.steps : result.blockingSteps;
-    const text = steps
-      .map(
-        (step, index) =>
-          `Step ${index + 1}\nLeft slot: ${formatIngredient(step.left, catalog)}\nRight slot: ${formatIngredient(step.right, catalog)}\nCost: ${step.levelCost} levels${step.legalInSurvival ? "" : " — Too Expensive"}\nResult: ${formatIngredient(step.result, catalog)}`,
-      )
-      .join("\n\n");
+    const text = formatStepsForClipboard(steps, catalog);
     try {
       await copyText(text);
       setMessage("Steps copied.");
@@ -240,7 +191,10 @@ export function CalculatorShell() {
   };
 
   const startOver = () => {
-    updateState(defaultQuick());
+    const empty = createDefaultPlannerDrafts();
+    updateState(
+      drafts.plannerMode === "quick" ? empty.quick : empty.inventory,
+    );
     window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
     setMessage("Started a new plan.");
   };
@@ -263,13 +217,17 @@ export function CalculatorShell() {
   return (
     <div className="calculator-shell">
       <div className="calculator-toolbar">
-        <PlannerTabs value={state.plannerMode} onChange={changeMode} />
+        <PlannerTabs value={drafts.plannerMode} onChange={changeMode} />
         <button
           type="button"
           className="text-button"
           onClick={() => {
-            clearSavedPlan();
-            setMessage("Saved plan cleared. Your current inputs remain open.");
+            const cleared = clearSavedPlan();
+            if (cleared.ok) {
+              setMessage("Saved plan cleared. Your current inputs remain open.");
+            } else {
+              setError(cleared.error);
+            }
           }}
         >
           Clear Saved Plan

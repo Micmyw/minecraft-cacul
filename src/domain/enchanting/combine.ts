@@ -3,6 +3,7 @@ import {
   isEnchantmentApplicable,
 } from "@/data/java/26.2/enchantments";
 import { getItemDefinition } from "@/data/java/26.2/items";
+import { areEnchantmentsCompatible } from "./compatibility";
 import { nextPriorWork, priorWorkPenalty } from "./prior-work";
 import type { EnchantmentLevel, Ingredient } from "./types";
 
@@ -22,10 +23,7 @@ export function formatEnchantmentLevel(enchantment: EnchantmentLevel): string {
 }
 
 function canCombineKinds(left: Ingredient, right: Ingredient): boolean {
-  if (right.kind === "target") return false;
-  if (left.kind === "book") return right.kind === "book";
-  if (right.kind === "book") return true;
-  return left.itemId !== null && left.itemId === right.itemId;
+  return right.kind === "book" && (left.kind === "target" || left.kind === "book");
 }
 
 export function combineIngredients(
@@ -45,15 +43,31 @@ export function combineIngredients(
   for (const incoming of right.enchantments) {
     const definition = getEnchantmentDefinition(incoming.enchantmentId);
     if (!definition) return null;
-    if (
-      left.kind !== "book" &&
-      left.itemId &&
-      !isEnchantmentApplicable(incoming.enchantmentId, left.itemId)
-    ) {
+    const applicable =
+      left.kind === "book" ||
+      Boolean(left.itemId && isEnchantmentApplicable(incoming.enchantmentId, left.itemId));
+    const conflicts = [...merged.values()].filter(
+      (existing) =>
+        existing.enchantmentId !== incoming.enchantmentId &&
+        !areEnchantmentsCompatible(existing.enchantmentId, incoming.enchantmentId),
+    );
+
+    // Java 26.2 adds one level for every incompatible enchantment already on
+    // the left item, even though the incoming entry itself is discarded.
+    enchantmentCost += conflicts.length;
+    if (!applicable || conflicts.length > 0) {
       const itemName = getItemDefinition(left.itemId)?.name ?? left.itemId;
-      warnings.push(
-        `${formatEnchantmentLevel(incoming)} was not applicable to ${itemName} and was discarded.`,
-      );
+      if (!applicable) {
+        warnings.push(
+          `${formatEnchantmentLevel(incoming)} was not applicable to ${itemName} and was discarded.`,
+        );
+      } else {
+        warnings.push(
+          `${formatEnchantmentLevel(incoming)} conflicted with ${conflicts
+            .map(formatEnchantmentLevel)
+            .join(", ")} and was discarded.`,
+        );
+      }
       continue;
     }
 

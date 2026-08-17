@@ -196,6 +196,7 @@ fieldset { min-width: 0; padding: 0; margin: 0; border: 0; }
 .merge-slots > div, .step-result > div { min-width: 0; padding: 10px; background: var(--forged-iron); }
 .merge-slots span, .step-result span { display: block; color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; }
 .merge-slots strong, .step-result strong { display: block; margin-top: 4px; overflow-wrap: anywhere; line-height: 1.35; }
+.merge-slots small, .step-result small { display: block; margin-top: 7px; color: var(--xp-green); font-family: var(--font-mono); font-size: 0.75rem; }
 .merge-rail { display: block; width: 100%; height: 34px; fill: var(--amber); stroke: rgb(243 174 69 / 58%); stroke-width: 2; }
 .step-cost strong { color: var(--xp-green); font-family: var(--font-mono); }
 .cost-danger .step-cost strong, .cost-too-expensive .step-cost strong { color: var(--danger); }

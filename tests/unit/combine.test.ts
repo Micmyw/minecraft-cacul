@@ -21,21 +21,14 @@ describe("anvil combination", () => {
     ]);
   });
 
-  it("uses the lower enchanted-book multiplier", () => {
+  it("uses the enchanted-book multiplier", () => {
     const target = ingredient({ id: "target", kind: "target" });
     const book = ingredient({
       id: "book",
       kind: "book",
       enchantments: [{ enchantmentId: "mending", level: 1 }],
     });
-    const item = ingredient({
-      id: "item",
-      kind: "item",
-      enchantments: [{ enchantmentId: "mending", level: 1 }],
-    });
-
     expect(combineIngredients(target, book, 39)?.levelCost).toBe(2);
-    expect(combineIngredients(target, item, 39)?.levelCost).toBe(4);
   });
 
   it("upgrades equal enchantment levels without exceeding the maximum", () => {
@@ -100,7 +93,7 @@ describe("anvil combination", () => {
   it("never sacrifices the target lineage in the right slot", () => {
     expect(
       combineIngredients(
-        ingredient({ id: "item", kind: "item" }),
+        ingredient({ id: "book", kind: "book" }),
         ingredient({ id: "target", kind: "target" }),
         39,
       ),

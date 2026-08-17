@@ -100,8 +100,8 @@ export default function Home() {
           <h2>Java Edition Scope</h2>
           <p>
             This version supports Minecraft Java Edition 26.2 enchantment costs,
-            compatibility, prior work, enchanted books, and same-type sacrifice
-            items. It does not calculate Bedrock rules, renaming, material repairs,
+            compatibility, prior work, and mixed enchanted books. It does not
+            calculate Bedrock rules, equipment sacrifices, renaming, material repairs,
             durability merging, mods, datapacks, or snapshots.
           </p>
         </section>
