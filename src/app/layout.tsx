@@ -1,0 +1,39 @@
+import type { Metadata } from "next";
+import { Archivo_Narrow, Atkinson_Hyperlegible } from "next/font/google";
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
+import { siteConfig } from "@/lib/site-config";
+import "./globals.css";
+
+const displayFont = Archivo_Narrow({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
+
+const bodyFont = Atkinson_Hyperlegible({
+  variable: "--font-body",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
+  title: { default: siteConfig.productName, template: `%s | ${siteConfig.name}` },
+  description: "Plan Minecraft Java Edition anvil combinations with clear costs and shareable steps.",
+  icons: { icon: "/icons/anvil-mark.svg" },
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
+      <body>
+        <SiteHeader />
+        <main>{children}</main>
+        <SiteFooter />
+      </body>
+    </html>
+  );
+}
