@@ -255,8 +255,16 @@ test("server HTML, canonical metadata, sitemap, and legal robots match the SEO c
   await expect(page.locator(".inline-alert")).toContainText("damaged or incomplete");
 
   const sitemap = await (await request.get("/sitemap.xml")).text();
-  expect((sitemap.match(/<url>/gu) ?? [])).toHaveLength(1);
-  expect(sitemap).not.toContain("/about");
+  expect((sitemap.match(/<url>/gu) ?? [])).toHaveLength(2);
+  expect(sitemap).toContain(`<loc>${SEO_ORIGIN}</loc>`);
+  expect(sitemap).toContain(`<loc>${SEO_ORIGIN}/about</loc>`);
+  for (const noindexPath of ["privacy", "terms", "disclaimer", "licenses"]) {
+    expect(sitemap).not.toContain(`<loc>${SEO_ORIGIN}/${noindexPath}</loc>`);
+  }
+
+  const robots = await (await request.get("/robots.txt")).text();
+  expect(robots).toContain(`Host: ${SEO_ORIGIN}`);
+  expect(robots).toContain(`Sitemap: ${SEO_ORIGIN}/sitemap.xml`);
 
   await page.goto("/privacy");
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex, follow/u);
