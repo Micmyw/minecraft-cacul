@@ -62,6 +62,8 @@ of scope.
 
 ## Deployment
 
+### Vercel
+
 The app is designed for a standard Vercel Next.js deployment. Configure both
 variables before the production build:
 
@@ -73,3 +75,38 @@ NEXT_PUBLIC_CONTACT_EMAIL=you@example.com
 `NEXT_PUBLIC_SITE_URL` must be the canonical origin without a trailing path.
 If either value is missing during a production build, the build prints one
 configuration warning; the UI never emits an empty `mailto:` link.
+
+### Cloudflare Workers
+
+Cloudflare deployment uses OpenNext and does not replace the standard Next.js
+build used by local development, CI, or Vercel. To build and preview the Worker
+locally:
+
+```bash
+pnpm build:cloudflare
+pnpm preview:cloudflare
+```
+
+For a Git-connected Cloudflare Workers project, use these dashboard values:
+
+```text
+Build command: pnpm run build:cloudflare
+Deploy command: pnpm exec opennextjs-cloudflare deploy
+```
+
+Set the following build variables before deploying:
+
+```text
+NODE_VERSION=24
+NEXT_PUBLIC_SITE_URL=https://your-production-domain.example
+NEXT_PUBLIC_CONTACT_EMAIL=you@example.com
+```
+
+For command-line deployment after `wrangler login`, run
+`pnpm deploy:cloudflare`. Use `pnpm upload:cloudflare` when you want to create a
+Worker version without immediately deploying it.
+
+OpenNext's local build tooling is not fully compatible with native Windows.
+Run the Cloudflare-specific commands in WSL/Linux, or let the repository's
+Linux GitHub Actions workflow and Cloudflare build system run them. Regular
+`pnpm dev`, `pnpm build`, and `pnpm start` continue to work on Windows.

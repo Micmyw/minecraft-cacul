@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+
+initOpenNextCloudflareForDev();
 
 const missingProductionSettings = [
   !process.env.NEXT_PUBLIC_SITE_URL && "NEXT_PUBLIC_SITE_URL (canonical and sitemap origin)",

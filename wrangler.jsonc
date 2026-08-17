@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "minecraft-cacul",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-08-17",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      // OpenNext uses this binding for cache revalidation. The service name
+      // must stay in sync with the Worker name above.
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "minecraft-cacul"
+    }
+  ]
+}
