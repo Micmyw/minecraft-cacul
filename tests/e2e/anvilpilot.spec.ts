@@ -88,6 +88,11 @@ test("Quick Plan calculates, focuses results, and restores a share link", async 
 test("Inventory Plan accepts a mixed book and warns about discarded enchantments", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("tab", { name: "Inventory Plan" }).click();
+  await expect(
+    page.getByText(
+      "Sacrifice books must be mutually compatible unless the target item already determines which conflicting enchantment is kept.",
+    ),
+  ).toBeVisible();
   await page.getByLabel("Target item").selectOption("sword");
   await page.getByRole("button", { name: "+ Add enchanted book" }).click();
 
@@ -127,6 +132,44 @@ test("Quick and Inventory keep independent drafts across tab switches", async ({
   await expect(
     page.locator(".selected-enchantments").getByText("Mending", { exact: true }),
   ).toBeVisible();
+});
+
+test("a Quick share link replaces only Quick while preserving saved Inventory", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Target item").selectOption("sword");
+  await page.getByLabel("Add enchantment").selectOption("sharpness");
+
+  await page.getByRole("tab", { name: "Inventory Plan" }).click();
+  await page.getByLabel("Target item").selectOption("pickaxe");
+  await page.getByRole("button", { name: "+ Add enchanted book" }).click();
+  await page
+    .getByRole("group", { name: "Enchantments on this book" })
+    .getByLabel("Add enchantment")
+    .selectOption("mending");
+  await page.locator("#book-1-prior-work").fill("2");
+
+  await expect
+    .poll(() => page.evaluate((key) => localStorage.getItem(key), SAVED_PLAN_KEY))
+    .toContain('"pickaxe"');
+
+  const sharedQuick = {
+    schemaVersion: 1,
+    plannerMode: "quick",
+    optimizeMode: "preserve-future-work",
+    targetItemId: "bow",
+    enchantments: [{ enchantmentId: "power", level: 5 }],
+  };
+  await page.goto(`/${planHash(sharedQuick)}`);
+  await expect(page.getByLabel("Target item")).toHaveValue("bow");
+
+  await page.getByRole("tab", { name: "Inventory Plan" }).click();
+  await expect(page.getByLabel("Target item")).toHaveValue("pickaxe");
+  await expect(page.locator("#book-1-prior-work")).toHaveValue("2");
+
+  await page.reload();
+  await page.getByRole("tab", { name: "Inventory Plan" }).click();
+  await expect(page.getByLabel("Target item")).toHaveValue("pickaxe");
+  await expect(page.locator("#book-1-prior-work")).toHaveValue("2");
 });
 
 test("validation and Too Expensive diagnostics are visible", async ({ page }) => {

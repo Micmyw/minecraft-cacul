@@ -36,6 +36,10 @@ export function InventoryPlanner({
   return (
     <div className="planner-form inventory-form" role="tabpanel">
       <TargetEditor target={state.target} catalog={catalog} onChange={updateTarget} />
+      <p className="field-hint" role="note">
+        Sacrifice books must be mutually compatible unless the target item already
+        determines which conflicting enchantment is kept.
+      </p>
       <div className="ingredient-list">
         {state.sacrifices.map((ingredient, index) => (
           <IngredientEditor

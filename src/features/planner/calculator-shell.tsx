@@ -70,11 +70,12 @@ export function CalculatorShell() {
         if (encoded) {
           const decoded = decodePlanState(encoded, nextCatalog);
           if (decoded.ok) {
-            const empty = createDefaultPlannerDrafts();
+            const existing =
+              loadSavedPlan(nextCatalog) ?? createDefaultPlannerDrafts();
             setDrafts(
               decoded.state.plannerMode === "quick"
-                ? { ...empty, plannerMode: "quick", quick: decoded.state }
-                : { ...empty, plannerMode: "inventory", inventory: decoded.state },
+                ? { ...existing, plannerMode: "quick", quick: decoded.state }
+                : { ...existing, plannerMode: "inventory", inventory: decoded.state },
             );
             setError("");
           } else {
