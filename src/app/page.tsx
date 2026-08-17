@@ -59,7 +59,12 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="calculator" className="calculator-section page-width" aria-labelledby="calculator-heading">
+      <section
+        id="calculator"
+        className="calculator-section page-width"
+        aria-labelledby="calculator-heading"
+        data-clarity-mask="true"
+      >
         <div className="tool-intro">
           <div><span className="section-kicker">LOCAL CALCULATION</span><h2 id="calculator-heading">Build your anvil plan</h2></div>
           <p>Use Quick Plan for fresh books, or enter the prior work and enchantments on the items you already own.</p>
