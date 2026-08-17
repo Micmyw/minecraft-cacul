@@ -4,7 +4,6 @@ import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 initOpenNextCloudflareForDev();
 
 const missingProductionSettings = [
-  !process.env.NEXT_PUBLIC_SITE_URL && "NEXT_PUBLIC_SITE_URL (canonical and sitemap origin)",
   !process.env.NEXT_PUBLIC_CONTACT_EMAIL && "NEXT_PUBLIC_CONTACT_EMAIL (public contact address)",
 ].filter(Boolean);
 

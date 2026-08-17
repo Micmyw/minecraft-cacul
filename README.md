@@ -64,17 +64,16 @@ of scope.
 
 ### Vercel
 
-The app is designed for a standard Vercel Next.js deployment. Configure both
-variables before the production build:
+The app is designed for a standard Vercel Next.js deployment. Its canonical
+production origin is fixed at `https://enchantmentcalculator.com`. Configure
+the public contact address before the production build:
 
 ```text
-NEXT_PUBLIC_SITE_URL=https://your-production-domain.example
 NEXT_PUBLIC_CONTACT_EMAIL=you@example.com
 ```
 
-`NEXT_PUBLIC_SITE_URL` must be the canonical origin without a trailing path.
-If either value is missing during a production build, the build prints one
-configuration warning; the UI never emits an empty `mailto:` link.
+If the contact address is missing during a production build, the build prints
+one configuration warning; the UI never emits an empty `mailto:` link.
 
 ### Cloudflare Workers
 
@@ -98,7 +97,6 @@ Set the following build variables before deploying:
 
 ```text
 NODE_VERSION=24
-NEXT_PUBLIC_SITE_URL=https://your-production-domain.example
 NEXT_PUBLIC_CONTACT_EMAIL=you@example.com
 ```
 

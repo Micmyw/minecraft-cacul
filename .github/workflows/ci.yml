@@ -15,7 +15,6 @@ jobs:
     timeout-minutes: 30
     env:
       CI: true
-      NEXT_PUBLIC_SITE_URL: http://localhost:3000
       NEXT_PUBLIC_CONTACT_EMAIL: ci@anvilpilot.invalid
 
     steps:

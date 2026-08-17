@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const SAVED_PLAN_KEY = "anvilpilot:planner:v2";
+const SEO_ORIGIN = "https://enchantmentcalculator.com";
 const browserErrors = new WeakMap<Page, string[]>();
 
 function planHash(state: unknown): string {
@@ -250,7 +251,7 @@ test("server HTML, canonical metadata, sitemap, and legal robots match the SEO c
   expect(html).toContain('"@type":"WebApplication"');
 
   await page.goto("/#plan=v1.damaged");
-  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "http://localhost:3000");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", SEO_ORIGIN);
   await expect(page.locator(".inline-alert")).toContainText("damaged or incomplete");
 
   const sitemap = await (await request.get("/sitemap.xml")).text();
