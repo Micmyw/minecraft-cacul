@@ -1,6 +1,7 @@
 import { useId } from "react";
 import type { EnchantmentLevel } from "@/domain/enchanting/types";
 import type { CatalogSnapshot } from "@/workers/protocol";
+import { EnchantmentSearch } from "./enchantment-search";
 
 export function EnchantmentPicker({
   catalog,
@@ -18,32 +19,18 @@ export function EnchantmentPicker({
   allowAll?: boolean;
 }) {
   const id = useId();
-  const selectedIds = new Set(selected.map((item) => item.enchantmentId));
-  const blockedIds = new Set(
-    selected.flatMap((item) =>
-      catalog.enchantments.find((entry) => entry.id === item.enchantmentId)
-        ?.incompatibleWith ?? [],
-    ),
-  );
-  const available = catalog.enchantments.filter(
-    (enchantment) =>
-      !selectedIds.has(enchantment.id) &&
-      (allowAll || (itemId && enchantment.supportedItemIds.includes(itemId))),
-  );
 
   return (
     <fieldset className="enchantment-picker">
       <legend>{label}</legend>
-      <label className="field-label" htmlFor={`${id}-add`}>
-        Add enchantment
-      </label>
-      <select
-        id={`${id}-add`}
-        value=""
-        disabled={!itemId && !allowAll}
-        onChange={(event) => {
+      <EnchantmentSearch
+        catalog={catalog}
+        itemId={itemId}
+        selected={selected}
+        allowAll={allowAll}
+        onSelect={(enchantmentId) => {
           const enchantment = catalog.enchantments.find(
-            (entry) => entry.id === event.target.value,
+            (entry) => entry.id === enchantmentId,
           );
           if (!enchantment) return;
           onChange([
@@ -51,19 +38,7 @@ export function EnchantmentPicker({
             { enchantmentId: enchantment.id, level: enchantment.maxLevel },
           ]);
         }}
-      >
-        <option value="">Choose an enchantment</option>
-        {available.map((enchantment) => (
-          <option
-            key={enchantment.id}
-            value={enchantment.id}
-            disabled={blockedIds.has(enchantment.id)}
-          >
-            {enchantment.name}
-            {blockedIds.has(enchantment.id) ? " — incompatible" : ""}
-          </option>
-        ))}
-      </select>
+      />
 
       {selected.length > 0 ? (
         <div className="selected-enchantments">

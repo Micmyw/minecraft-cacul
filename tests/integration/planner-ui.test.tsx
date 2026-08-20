@@ -133,8 +133,9 @@ describe("planner UI", () => {
         label="Wanted enchantments"
       />,
     );
-    expect(screen.queryByRole("option", { name: "Power" })).not.toBeInTheDocument();
-    await userEvent.selectOptions(screen.getByLabelText("Add enchantment"), "sharpness");
+    await userEvent.type(screen.getByLabelText("Add enchantment"), "sharp");
+    expect(screen.queryByRole("button", { name: /Power/i })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /Sharpness/i }));
     expect(onChange).toHaveBeenCalledWith([
       { enchantmentId: "sharpness", level: 5 },
     ]);
