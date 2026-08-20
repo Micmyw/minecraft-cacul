@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CalculatorShell } from "@/features/planner/calculator-shell";
 import { enchantments } from "@/data/java/26.2/enchantments";
 import { items } from "@/data/java/26.2/items";
@@ -119,6 +120,14 @@ export default function Home() {
             <details><summary>Why can a valid enchantment plan still be Too Expensive?</summary><p>Survival blocks any single anvil step at 40 levels or more. Earlier combinations can raise the final item&apos;s prior-work penalty past that limit.</p></details>
             <details><summary>Can I share a calculation?</summary><p>Yes. Copy Share Link stores the validated input in the URL hash. It does not create a server record and the hash is not part of the canonical URL.</p></details>
             <details><summary>Does a mixed book keep every enchantment?</summary><p>No. When a book is applied to an item, enchantments that do not apply to that item are discarded and shown as a warning.</p></details>
+          </div>
+        </section>
+        <section className="guide-discovery">
+          <span className="section-kicker">DEEPER GUIDES</span>
+          <h2>Learn the anvil mechanics</h2>
+          <div className="guide-discovery-links">
+            <Link href="/minecraft-prior-work-penalty"><strong>Prior Work Penalty</strong><span>See the 2^n − 1 table and how combined items inherit their next prior-work count.</span></Link>
+            <Link href="/minecraft-anvil-too-expensive"><strong>Why the Anvil Says Too Expensive</strong><span>Understand the 40-level single-step limit and which order problems can be fixed.</span></Link>
           </div>
         </section>
         <aside className="scope-note">
