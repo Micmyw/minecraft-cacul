@@ -15,6 +15,12 @@ import {
   planStateToSolveRequest,
   type PlanStateV1,
 } from "@/lib/share-state";
+import {
+  createProductAnalyticsParams,
+  isMeaningfulDraftAction,
+  productResultEventName,
+  trackProductEvent,
+} from "@/lib/product-analytics";
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { EnchantmentSolverClient } from "@/workers/worker-client";
 import { CalculateButton } from "./calculate-button";
@@ -53,6 +59,7 @@ export function CalculatorShell() {
   const [error, setError] = useState("");
   const clientRef = useRef<EnchantmentSolverClient | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+  const startedModesRef = useRef(new Set<PlannerMode>());
   const state: PlanStateV1 =
     drafts.plannerMode === "quick" ? drafts.quick : drafts.inventory;
 
@@ -109,7 +116,19 @@ export function CalculatorShell() {
     }
   }, [drafts, hydrated]);
 
+  const markPlannerStarted = (nextState: PlanStateV1) => {
+    if (startedModesRef.current.has(nextState.plannerMode)) return;
+    startedModesRef.current.add(nextState.plannerMode);
+    trackProductEvent(
+      "calculator_start",
+      createProductAnalyticsParams(nextState),
+    );
+  };
+
   const updateState = (nextState: PlanStateV1) => {
+    if (isMeaningfulDraftAction(state, nextState)) {
+      markPlannerStarted(nextState);
+    }
     clientRef.current?.cancelActive();
     setCalculating(false);
     setProgress(0);
@@ -124,6 +143,11 @@ export function CalculatorShell() {
 
   const changeMode = (mode: PlannerMode) => {
     if (mode === drafts.plannerMode) return;
+    const nextState = mode === "quick" ? drafts.quick : drafts.inventory;
+    trackProductEvent(
+      "planner_mode_change",
+      createProductAnalyticsParams(nextState),
+    );
     clientRef.current?.cancelActive();
     setCalculating(false);
     setProgress(0);
@@ -144,6 +168,10 @@ export function CalculatorShell() {
         (event) => setProgress(event.progress),
       );
       setResult(nextResult);
+      trackProductEvent(
+        productResultEventName(nextResult),
+        createProductAnalyticsParams(state, nextResult),
+      );
       requestAnimationFrame(() => {
         resultRef.current?.focus({ preventScroll: true });
         resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -174,6 +202,7 @@ export function CalculatorShell() {
       window.history.replaceState(null, "", `#plan=${encoded}`);
       await copyText(url);
       setMessage("Share link copied.");
+      trackProductEvent("share_link", createProductAnalyticsParams(state, result));
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not copy the share link.");
     }
@@ -186,6 +215,7 @@ export function CalculatorShell() {
     try {
       await copyText(text);
       setMessage("Steps copied.");
+      trackProductEvent("copy_steps", createProductAnalyticsParams(state, result));
     } catch {
       setError("Could not copy the steps. Check clipboard permission and try again.");
     }
