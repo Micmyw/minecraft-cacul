@@ -99,7 +99,7 @@ function saveCalculatorDrafts(plannerMode: "quick" | "inventory" = "quick") {
         kind: "book",
         itemId: null,
         enchantments: [{ enchantmentId: "sharpness", level: 5 }],
-        priorWork: 0,
+        priorWork: 2,
       },
     ],
   };
@@ -259,6 +259,28 @@ describe("calculator product analytics", () => {
       ["event", "calculator_start", expect.objectContaining({ planner_mode: "quick" })],
       ["event", "calculator_start", expect.objectContaining({ planner_mode: "inventory" })],
     ]);
+  });
+
+  it("loads an example into Quick only and emits its controlled analytics events", async () => {
+    saveCalculatorDrafts("quick");
+    render(<CalculatorShell />);
+    const urlBeforeLoad = window.location.href;
+    await userEvent.click(await screen.findByRole("button", { name: "Maxed Sword" }));
+
+    expect(screen.getByLabelText("Target item")).toHaveValue("sword");
+    expect(window.location.href).toBe(urlBeforeLoad);
+    expect(analyticsCalls()).toContainEqual([
+      "event",
+      "example_loaded",
+      expect.objectContaining({
+        planner_mode: "quick",
+        example_type: "maxed_sword",
+      }),
+    ]);
+    expect(analyticsCalls().filter((call) => call[1] === "calculator_start")).toHaveLength(1);
+
+    await userEvent.click(screen.getByRole("tab", { name: "Inventory Plan" }));
+    expect(document.querySelector<HTMLInputElement>("#book-1-prior-work")).toHaveValue(2);
   });
 
   it("maps invalid input to invalid_input and never calculation_success", async () => {

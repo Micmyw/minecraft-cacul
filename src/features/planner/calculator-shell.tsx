@@ -24,6 +24,7 @@ import {
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { EnchantmentSolverClient } from "@/workers/worker-client";
 import { CalculateButton } from "./calculate-button";
+import type { ExamplePlan } from "./example-plans";
 import { InventoryPlanner } from "./inventory-planner";
 import { OptimizationMode } from "./optimization-mode";
 import { formatStepsForClipboard } from "./planner-format";
@@ -139,6 +140,21 @@ export function CalculatorShell() {
         ? { ...current, plannerMode: "quick", quick: nextState }
         : { ...current, plannerMode: "inventory", inventory: nextState },
     );
+  };
+
+  const loadExample = (example: ExamplePlan) => {
+    const nextState = {
+      ...example.state,
+      enchantments: example.state.enchantments.map((enchantment) => ({
+        ...enchantment,
+      })),
+    };
+    markPlannerStarted(nextState);
+    updateState(nextState);
+    trackProductEvent("example_loaded", {
+      ...createProductAnalyticsParams(nextState),
+      example_type: example.id,
+    });
   };
 
   const changeMode = (mode: PlannerMode) => {
@@ -267,7 +283,12 @@ export function CalculatorShell() {
       <div className="calculator-grid">
         <div className="input-panel">
           {state.plannerMode === "quick" ? (
-            <QuickPlanner state={state} catalog={catalog} onChange={updateState} />
+            <QuickPlanner
+              state={state}
+              catalog={catalog}
+              onChange={updateState}
+              onLoadExample={loadExample}
+            />
           ) : (
             <InventoryPlanner state={state} catalog={catalog} onChange={updateState} />
           )}

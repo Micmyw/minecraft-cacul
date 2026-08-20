@@ -1,18 +1,23 @@
 import type { QuickPlanStateV1 } from "@/lib/share-state";
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { EnchantmentPicker } from "./enchantment-picker";
+import { ExamplePlanButtons } from "./example-plan-buttons";
+import type { ExamplePlan } from "./example-plans";
 
 export function QuickPlanner({
   state,
   catalog,
   onChange,
+  onLoadExample,
 }: {
   state: QuickPlanStateV1;
   catalog: CatalogSnapshot;
   onChange: (state: QuickPlanStateV1) => void;
+  onLoadExample: (example: ExamplePlan) => void;
 }) {
   return (
     <div className="planner-form" role="tabpanel">
+      <ExamplePlanButtons onLoad={onLoadExample} />
       <div className="form-section">
         <div className="section-heading">
           <span>01</span>
