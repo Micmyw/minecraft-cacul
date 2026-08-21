@@ -40,6 +40,7 @@ pnpm typecheck
 pnpm test
 pnpm build
 pnpm test:e2e
+pnpm build:cloudflare
 ```
 
 `pnpm test` runs the Vitest unit and integration suites. `pnpm test:e2e` runs
@@ -59,6 +60,25 @@ with nine through 32 sacrifice books use the deterministic bounded heuristic.
 V1 accepts one target item and enchanted books; equipment sacrifices, repairs,
 renaming, durability merging, Bedrock, mods, datapacks, and snapshots are out
 of scope.
+
+## SEO validation release scope
+
+The first post-launch validation release adds:
+
+- consent-aware calculator funnel events, documented in
+  [`docs/analytics-events.md`](docs/analytics-events.md);
+- three solver-verified Quick Plan examples: Maxed Sword, Fortune Pickaxe, and
+  Survival Boots;
+- a local, keyboard-operable enchantment search control with no third-party UI
+  dependency or remote search;
+- substantive guides at `/minecraft-prior-work-penalty` and
+  `/minecraft-anvil-too-expensive`, backed by solver-verified worked examples;
+- desktop Chromium, Pixel 7, 320px overflow, guide SEO, and four-URL sitemap
+  release coverage.
+
+This release does not change the core solver, the Java Edition 26.2 catalog,
+the eight-book Exact Optimal / nine-or-more Best Found boundary, or the
+homepage title and H1. It also does not add indexable preset or item pages.
 
 ## Deployment
 
