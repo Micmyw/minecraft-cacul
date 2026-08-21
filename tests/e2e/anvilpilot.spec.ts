@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const SAVED_PLAN_KEY = "anvilpilot:planner:v2";
 const SEO_ORIGIN = "https://enchantmentcalculator.com";
@@ -38,6 +38,24 @@ function inventoryState({
   };
 }
 
+async function addEnchantment(scope: Page | Locator, name: string) {
+  const search = scope.getByLabel("Add enchantment");
+  await search.fill(name);
+  const result = scope.getByRole("button", {
+    name: new RegExp(`^${name}\\s+Max level:`, "u"),
+  });
+  await expect(result).toBeEnabled();
+  await result.click();
+}
+
+async function expectNoHorizontalOverflow(page: Page) {
+  const widths = await page.evaluate(() => ({
+    content: Math.max(document.body.scrollWidth, document.documentElement.scrollWidth),
+    viewport: window.innerWidth,
+  }));
+  expect(widths.content).toBeLessThanOrEqual(widths.viewport);
+}
+
 test.beforeEach(async ({ page, context }) => {
   browserErrors.set(page, []);
   page.on("pageerror", (error) => browserErrors.get(page)?.push(`pageerror: ${error.message}`));
@@ -57,8 +75,8 @@ test("Quick Plan calculates, focuses results, and restores a share link", async 
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Minecraft Enchantment Calculator");
   await page.getByLabel("Target item").selectOption("sword");
-  await page.getByLabel("Add enchantment").selectOption("sharpness");
-  await page.getByLabel("Add enchantment").selectOption("mending");
+  await addEnchantment(page, "Sharpness");
+  await addEnchantment(page, "Mending");
 
   await page.getByRole("button", { name: "Calculate Anvil Order" }).click();
   await expect(page.getByRole("heading", { name: "Your anvil work order" })).toBeVisible();
@@ -86,6 +104,75 @@ test("Quick Plan calculates, focuses results, and restores a share link", async 
   ).toBeVisible();
 });
 
+test("all verified examples load their complete draft and calculate successfully", async ({ page }) => {
+  const examples = [
+    {
+      label: "Maxed Sword",
+      target: "sword",
+      enchantments: [
+        "Sharpness",
+        "Looting",
+        "Sweeping Edge",
+        "Knockback",
+        "Fire Aspect",
+        "Unbreaking",
+        "Mending",
+      ],
+    },
+    {
+      label: "Fortune Pickaxe",
+      target: "pickaxe",
+      enchantments: ["Efficiency", "Fortune", "Unbreaking", "Mending"],
+    },
+    {
+      label: "Survival Boots",
+      target: "boots",
+      enchantments: [
+        "Protection",
+        "Feather Falling",
+        "Depth Strider",
+        "Soul Speed",
+        "Thorns",
+        "Unbreaking",
+        "Mending",
+      ],
+    },
+  ] as const;
+
+  await page.goto("/");
+  for (const example of examples) {
+    await page.getByRole("button", { name: example.label, exact: true }).click();
+    await expect(page.getByLabel("Target item")).toHaveValue(example.target);
+    const selected = page.locator(".selected-enchantments");
+    for (const enchantment of example.enchantments) {
+      await expect(selected.getByText(enchantment, { exact: true })).toBeVisible();
+    }
+
+    await page.getByRole("button", { name: "Calculate Anvil Order" }).click();
+    await expect(page.getByRole("heading", { name: "Your anvil work order" })).toBeVisible();
+    await expect(page.locator(".quality-badge", { hasText: "Exact Optimal" })).toBeVisible();
+  }
+});
+
+test("search adds an enchantment with keyboard input and exposes incompatibility", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Target item").selectOption("pickaxe");
+
+  const search = page.getByLabel("Add enchantment");
+  await search.fill("forTUNE");
+  const fortune = page.getByRole("button", { name: /^Fortune\s+Max level:/u });
+  await expect(fortune).toBeVisible();
+  await fortune.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator(".selected-enchantments").getByText("Fortune", { exact: true })).toBeVisible();
+
+  await search.fill("silk touch");
+  await expect(page.getByRole("button", { name: /Silk Touch.*Incompatible/u })).toBeDisabled();
+  await page.keyboard.press("Escape");
+  await expect(search).toHaveValue("");
+  await expect(page.getByLabel("Available enchantments")).toBeHidden();
+});
+
 test("Inventory Plan accepts a mixed book and warns about discarded enchantments", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("tab", { name: "Inventory Plan" }).click();
@@ -98,8 +185,8 @@ test("Inventory Plan accepts a mixed book and warns about discarded enchantments
   await page.getByRole("button", { name: "+ Add enchanted book" }).click();
 
   const book = page.getByRole("group", { name: "Enchantments on this book" });
-  await book.getByLabel("Add enchantment").selectOption("mending");
-  await book.getByLabel("Add enchantment").selectOption("power");
+  await addEnchantment(book, "Mending");
+  await addEnchantment(book, "Power");
   await page.locator("#book-1-prior-work").fill("3");
   await page.getByRole("button", { name: "Calculate Anvil Order" }).click();
 
@@ -111,16 +198,15 @@ test("Inventory Plan accepts a mixed book and warns about discarded enchantments
 test("Quick and Inventory keep independent drafts across tab switches", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("Target item").selectOption("sword");
-  await page.getByLabel("Add enchantment").selectOption("sharpness");
+  await addEnchantment(page, "Sharpness");
 
   await page.getByRole("tab", { name: "Inventory Plan" }).click();
   await page.getByLabel("Target item").selectOption("pickaxe");
   await page.getByRole("button", { name: "+ Add enchanted book" }).click();
-  await page
-    .getByRole("group", { name: "Enchantments on this book" })
-    .getByLabel("Add enchantment")
-    .last()
-    .selectOption("mending");
+  await addEnchantment(
+    page.getByRole("group", { name: "Enchantments on this book" }),
+    "Mending",
+  );
   await page.locator("#book-1-prior-work").fill("2");
 
   await page.getByRole("tab", { name: "Quick Plan" }).click();
@@ -135,18 +221,41 @@ test("Quick and Inventory keep independent drafts across tab switches", async ({
   ).toBeVisible();
 });
 
+test("loading an example preserves the Inventory draft", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("tab", { name: "Inventory Plan" }).click();
+  await page.getByLabel("Target item").selectOption("pickaxe");
+  await page.getByRole("button", { name: "+ Add enchanted book" }).click();
+  await addEnchantment(
+    page.getByRole("group", { name: "Enchantments on this book" }),
+    "Mending",
+  );
+  await page.locator("#book-1-prior-work").fill("2");
+
+  await page.getByRole("tab", { name: "Quick Plan" }).click();
+  await page.getByRole("button", { name: "Maxed Sword", exact: true }).click();
+  await expect(page.getByLabel("Target item")).toHaveValue("sword");
+
+  await page.getByRole("tab", { name: "Inventory Plan" }).click();
+  await expect(page.getByLabel("Target item")).toHaveValue("pickaxe");
+  await expect(page.locator("#book-1-prior-work")).toHaveValue("2");
+  await expect(
+    page.locator(".selected-enchantments").getByText("Mending", { exact: true }),
+  ).toBeVisible();
+});
+
 test("a Quick share link replaces only Quick while preserving saved Inventory", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("Target item").selectOption("sword");
-  await page.getByLabel("Add enchantment").selectOption("sharpness");
+  await addEnchantment(page, "Sharpness");
 
   await page.getByRole("tab", { name: "Inventory Plan" }).click();
   await page.getByLabel("Target item").selectOption("pickaxe");
   await page.getByRole("button", { name: "+ Add enchanted book" }).click();
-  await page
-    .getByRole("group", { name: "Enchantments on this book" })
-    .getByLabel("Add enchantment")
-    .selectOption("mending");
+  await addEnchantment(
+    page.getByRole("group", { name: "Enchantments on this book" }),
+    "Mending",
+  );
   await page.locator("#book-1-prior-work").fill("2");
 
   await expect
@@ -193,14 +302,16 @@ test("validation and Too Expensive diagnostics are visible", async ({ page }) =>
   await page.goto(`/${planHash(inventoryState({ targetPriorWork: 5, bookPriorWork: 3 }))}`);
   await page.getByRole("button", { name: "Calculate Anvil Order" }).click();
   await expect(page.getByRole("heading", { name: "No Survival-legal plan" })).toBeVisible();
-  await expect(page.getByText("Too Expensive", { exact: true })).toBeVisible();
+  await expect(
+    page.locator(".result-panel").getByText("Too Expensive", { exact: true }),
+  ).toBeVisible();
   await expect(page.getByText("40 levels", { exact: true })).toBeVisible();
 });
 
 test("LocalStorage restoration and Clear Saved Plan are deterministic", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("Target item").selectOption("sword");
-  await page.getByLabel("Add enchantment").selectOption("mending");
+  await addEnchantment(page, "Mending");
   await expect.poll(() => page.evaluate((key) => localStorage.getItem(key), SAVED_PLAN_KEY)).toContain('"sword"');
 
   await page.reload();
@@ -243,6 +354,56 @@ test("layout, controls, and planner tabs work with keyboard input", async ({ pag
   await expect(page.getByLabel("Prior-work count").first()).toBeVisible();
 });
 
+test("guide pages expose their SEO contract, worked content, and calculator CTA", async ({ page }) => {
+  const guides = [
+    {
+      path: "/minecraft-prior-work-penalty",
+      h1: "Minecraft Prior Work Penalty",
+    },
+    {
+      path: "/minecraft-anvil-too-expensive",
+      h1: "Minecraft Anvil Too Expensive",
+    },
+  ] as const;
+
+  for (const guide of guides) {
+    const response = await page.goto(guide.path);
+    expect(response?.status()).toBe(200);
+    await expect(page.getByRole("heading", { level: 1, name: guide.h1 })).toBeVisible();
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+      "href",
+      `${SEO_ORIGIN}${guide.path}`,
+    );
+    if (guide.path === "/minecraft-prior-work-penalty") {
+      await expect(page.getByRole("table", { name: "Prior-work penalty values" })).toBeVisible();
+    } else {
+      await expect(
+        page.getByRole("heading", {
+          level: 2,
+          name: "Survival Boots with seven fresh books",
+        }),
+      ).toBeVisible();
+    }
+    const cta = page.getByRole("link", { name: "Open the Minecraft Enchantment Calculator" });
+    await expect(cta).toHaveAttribute("href", "/#calculator");
+    await cta.click();
+    await expect(page).toHaveURL(/\/#calculator$/u);
+    await expect(page.locator("#calculator")).toBeVisible();
+  }
+});
+
+test("homepage and guide pages have no horizontal overflow at 320px", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  for (const path of [
+    "/",
+    "/minecraft-prior-work-penalty",
+    "/minecraft-anvil-too-expensive",
+  ]) {
+    await page.goto(path);
+    await expectNoHorizontalOverflow(page);
+  }
+});
+
 test("server HTML, canonical metadata, sitemap, and legal robots match the SEO contract", async ({ page, request }) => {
   const response = await request.get("/");
   const html = await response.text();
@@ -255,9 +416,15 @@ test("server HTML, canonical metadata, sitemap, and legal robots match the SEO c
   await expect(page.locator(".inline-alert")).toContainText("damaged or incomplete");
 
   const sitemap = await (await request.get("/sitemap.xml")).text();
-  expect((sitemap.match(/<url>/gu) ?? [])).toHaveLength(2);
-  expect(sitemap).toContain(`<loc>${SEO_ORIGIN}</loc>`);
-  expect(sitemap).toContain(`<loc>${SEO_ORIGIN}/about</loc>`);
+  const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gu)].map(
+    (match) => match[1],
+  );
+  expect(sitemapUrls).toEqual([
+    SEO_ORIGIN,
+    `${SEO_ORIGIN}/about`,
+    `${SEO_ORIGIN}/minecraft-prior-work-penalty`,
+    `${SEO_ORIGIN}/minecraft-anvil-too-expensive`,
+  ]);
   for (const noindexPath of ["privacy", "terms", "disclaimer", "licenses"]) {
     expect(sitemap).not.toContain(`<loc>${SEO_ORIGIN}/${noindexPath}</loc>`);
   }
