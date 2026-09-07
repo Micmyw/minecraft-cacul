@@ -4,6 +4,7 @@ import { GuideLinks } from "@/components/guide-links";
 import { priorWorkGuideExample } from "@/content/guide-examples";
 import { dataMetadata } from "@/data/java/26.2/metadata";
 import { priorWorkPenalty } from "@/domain/enchanting/prior-work";
+import { formatIsoDate } from "@/lib/date-format";
 import { secondaryPageMetadata } from "@/lib/seo";
 
 const title = "Minecraft Prior Work Penalty – Anvil Cost Table";
@@ -146,7 +147,7 @@ export default function PriorWorkPenaltyPage() {
         </div>
       </section>
 
-      <p className="guide-verification">Verified for Java Edition {dataMetadata.gameVersion} on {dataMetadata.verifiedAt}.</p>
+      <p className="guide-verification">Verified for Java Edition {dataMetadata.gameVersion} on {formatIsoDate(dataMetadata.verifiedAt)}.</p>
       <GuideCta />
       <GuideLinks current="prior-work" />
     </article>

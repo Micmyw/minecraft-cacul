@@ -26,7 +26,8 @@ export function ResultSummary({
   if (result.status === "no-legal-plan") {
     const exhaustive = result.quality === "exact-optimal";
     return (
-      <div className="result-summary">
+      <div className="result-summary no-plan-summary">
+        <div className="result-state-label danger-state"><span aria-hidden="true">!</span> No legal plan</div>
         <div className="result-title-row">
           <h3>
             {exhaustive
@@ -58,16 +59,28 @@ export function ResultSummary({
   );
   return (
     <div className="result-summary">
+      <div className="result-state-label success-state"><span aria-hidden="true">✓</span> Survival-ready</div>
       <div className="result-title-row">
         <h3>Your anvil work order</h3>
         <PlanQualityBadge quality={result.quality} />
       </div>
+      <p className="quality-explanation">
+        {result.quality === "exact-optimal"
+          ? "The complete search was evaluated for this plan, so no better result exists under the selected objective and tie-breakers."
+          : "This is the best result found by the bounded search. A lower-cost order may still exist."}
+      </p>
+      {result.legalInSurvival && (
+        <div className="survival-banner">
+          <span className="status-light" aria-hidden="true" />
+          <p><strong>Every anvil step costs 39 levels or less.</strong><span>Ready to follow in Survival.</span></p>
+        </div>
+      )}
       <dl className="result-metrics">
         <div><dt>Total Levels</dt><dd>{result.totalLevels}</dd></div>
         <div><dt>Highest Single Step</dt><dd>{result.highestStepCost}</dd></div>
         <div><dt>Final Prior Work</dt><dd>{result.finalPriorWork}</dd></div>
         <div><dt>Survival Legal</dt><dd>{result.legalInSurvival ? "Yes" : "No"}</dd></div>
-        <div><dt>Levels Saved</dt><dd>{result.levelsSaved ?? "—"}</dd></div>
+        <div className="result-metric-wide"><dt>Levels Saved</dt><dd>{result.levelsSaved ?? "—"}</dd></div>
       </dl>
       <ComparisonCard
         optimized={result.totalLevels}

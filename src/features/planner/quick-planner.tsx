@@ -22,11 +22,15 @@ export function QuickPlanner({
       role="tabpanel"
       aria-labelledby="planner-tab-quick"
     >
+      <div className="mode-intro quick-mode-intro">
+        <span className="mode-glyph" aria-hidden="true">✦</span>
+        <div><strong>Fresh-book workflow</strong><p>Choose an item and target enchantments. Fresh, single-enchantment books are assumed.</p></div>
+      </div>
       <ExamplePlanButtons onLoad={onLoadExample} />
       <div className="form-section">
         <div className="section-heading">
           <span>01</span>
-          <div><h3>Choose the target item</h3><p>Materials with the same enchantment rules are grouped together.</p></div>
+          <div><h3>Select item</h3><p>Materials with the same enchantment rules are grouped together.</p></div>
         </div>
         <label className="field-label" htmlFor="quick-target">Target item</label>
         <select
@@ -49,7 +53,7 @@ export function QuickPlanner({
       <div className="form-section">
         <div className="section-heading">
           <span>02</span>
-          <div><h3>Add wanted enchantments</h3><p>Quick Plan assumes one fresh book per enchantment.</p></div>
+          <div><h3>Choose target enchantments</h3><p>Quick Plan assumes one fresh book per enchantment.</p></div>
         </div>
         <EnchantmentPicker
           catalog={catalog}

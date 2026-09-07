@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { Archivo_Narrow, Atkinson_Hyperlegible } from "next/font/google";
+import { Atkinson_Hyperlegible, Sora } from "next/font/google";
 import { SiteAnalytics } from "@/components/site-analytics";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { siteConfig } from "@/lib/site-config";
 import "./globals.css";
+import "./forge-ui.css";
 
-const displayFont = Archivo_Narrow({
+const displayFont = Sora({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -27,8 +28,13 @@ export const metadata: Metadata = {
   applicationName: siteConfig.name,
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/icons/anvil-mark.svg",
-    apple: "/apple-icon",
+    icon: [
+      { url: "/icons/favicon.svg", type: "image/svg+xml" },
+      { url: "/icons/icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/favicon.ico", sizes: "any" },
+    ],
+    shortcut: "/icons/favicon.ico",
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     type: "website",

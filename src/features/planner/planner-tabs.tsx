@@ -3,8 +3,8 @@ import type { KeyboardEvent } from "react";
 export type PlannerMode = "quick" | "inventory";
 
 const tabs = [
-  ["quick", "Quick Plan"],
-  ["inventory", "Inventory Plan"],
+  ["quick", "Quick Plan", "Fresh books", "✦"],
+  ["inventory", "Inventory Plan", "Your real gear", "◇"],
 ] as const;
 
 export function PlannerTabs({
@@ -31,20 +31,22 @@ export function PlannerTabs({
 
   return (
     <div className="planner-tabs" role="tablist" aria-label="Planner mode">
-      {tabs.map(([mode, label]) => (
+      {tabs.map(([mode, label, description, icon]) => (
         <button
           key={mode}
           id={`planner-tab-${mode}`}
           type="button"
           role="tab"
+          aria-label={label}
           aria-selected={value === mode}
           aria-controls={`planner-panel-${mode}`}
           tabIndex={value === mode ? 0 : -1}
-          className="planner-tab"
+          className={`planner-tab ${mode}-tab`}
           onClick={() => onChange(mode)}
           onKeyDown={(event) => handleKeyDown(event, mode)}
         >
-          {label}
+          <span className="planner-tab-icon" aria-hidden="true">{icon}</span>
+          <span className="planner-tab-copy"><strong>{label}</strong><small aria-hidden="true">{description}</small></span>
         </button>
       ))}
     </div>

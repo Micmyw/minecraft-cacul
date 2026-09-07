@@ -3,6 +3,7 @@ import { GuideCta } from "@/components/guide-cta";
 import { GuideLinks } from "@/components/guide-links";
 import { tooExpensiveGuideExample } from "@/content/guide-examples";
 import { dataMetadata } from "@/data/java/26.2/metadata";
+import { formatIsoDate } from "@/lib/date-format";
 import { secondaryPageMetadata } from "@/lib/seo";
 
 const title = "Minecraft Anvil Too Expensive – Causes and Fixes";
@@ -115,7 +116,7 @@ export default function TooExpensivePage() {
         </div>
       </section>
 
-      <p className="guide-verification">Verified for Java Edition {dataMetadata.gameVersion} on {dataMetadata.verifiedAt}.</p>
+      <p className="guide-verification">Verified for Java Edition {dataMetadata.gameVersion} on {formatIsoDate(dataMetadata.verifiedAt)}.</p>
       <GuideCta />
       <GuideLinks current="too-expensive" />
     </article>

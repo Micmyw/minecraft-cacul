@@ -10,9 +10,11 @@ export const metadata: Metadata = secondaryPageMetadata(
 export default function TermsPage() {
   return (
     <article className="prose-page page-width">
-      <span className="section-kicker">LEGAL / TERMS</span>
-      <h1>Terms of Use</h1>
-      <p className="page-lede">Use AnvilPilot as an informational planning aid.</p>
+      <header className="legal-header">
+        <span className="section-kicker">LEGAL / TERMS</span>
+        <h1>Terms of Use</h1>
+        <p className="page-lede">Use AnvilPilot as an informational planning aid.</p>
+      </header>
       <h2>No guarantee of game outcomes</h2>
       <p>Game mechanics can change. Check that the selected edition and version match the world you are playing before spending items or levels.</p>
       <h2>Result quality</h2>

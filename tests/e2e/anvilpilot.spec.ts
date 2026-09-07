@@ -176,15 +176,15 @@ test("search adds an enchantment with keyboard input and exposes incompatibility
 test("Inventory Plan accepts a mixed book and warns about discarded enchantments", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("tab", { name: "Inventory Plan" }).click();
+  await page.getByLabel("Target item").selectOption("sword");
   await expect(
     page.getByText(
       "Sacrifice books must be mutually compatible unless the target item already determines which conflicting enchantment is kept.",
     ),
   ).toBeVisible();
-  await page.getByLabel("Target item").selectOption("sword");
   await page.getByRole("button", { name: "+ Add enchanted book" }).click();
 
-  const book = page.getByRole("group", { name: "Enchantments on this book" });
+  const book = page.getByRole("group", { name: "Book 1 enchantments" });
   await addEnchantment(book, "Mending");
   await addEnchantment(book, "Power");
   await page.locator("#book-1-prior-work").fill("3");
@@ -204,7 +204,7 @@ test("Quick and Inventory keep independent drafts across tab switches", async ({
   await page.getByLabel("Target item").selectOption("pickaxe");
   await page.getByRole("button", { name: "+ Add enchanted book" }).click();
   await addEnchantment(
-    page.getByRole("group", { name: "Enchantments on this book" }),
+    page.getByRole("group", { name: "Book 1 enchantments" }),
     "Mending",
   );
   await page.locator("#book-1-prior-work").fill("2");
@@ -227,7 +227,7 @@ test("loading an example preserves the Inventory draft", async ({ page }) => {
   await page.getByLabel("Target item").selectOption("pickaxe");
   await page.getByRole("button", { name: "+ Add enchanted book" }).click();
   await addEnchantment(
-    page.getByRole("group", { name: "Enchantments on this book" }),
+    page.getByRole("group", { name: "Book 1 enchantments" }),
     "Mending",
   );
   await page.locator("#book-1-prior-work").fill("2");
@@ -253,7 +253,7 @@ test("a Quick share link replaces only Quick while preserving saved Inventory", 
   await page.getByLabel("Target item").selectOption("pickaxe");
   await page.getByRole("button", { name: "+ Add enchanted book" }).click();
   await addEnchantment(
-    page.getByRole("group", { name: "Enchantments on this book" }),
+    page.getByRole("group", { name: "Book 1 enchantments" }),
     "Mending",
   );
   await page.locator("#book-1-prior-work").fill("2");
@@ -330,7 +330,9 @@ test("a long Worker search can be cancelled without losing inputs", async ({ pag
   await expect(page.getByText("32 / 32 materials")).toBeVisible();
   await page.getByRole("button", { name: "Calculate Anvil Order" }).click();
   await page.getByRole("button", { name: "Cancel calculation" }).click();
-  await expect(page.getByRole("status")).toContainText("Calculation cancelled");
+  await expect(
+    page.getByText("Calculation cancelled. Your inputs are unchanged.", { exact: true }),
+  ).toBeVisible();
   await expect(page.getByLabel("Target item")).toHaveValue("sword");
 });
 

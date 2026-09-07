@@ -10,9 +10,11 @@ export const metadata: Metadata = secondaryPageMetadata(
 export default function DisclaimerPage() {
   return (
     <article className="prose-page page-width">
-      <span className="section-kicker">LEGAL / DISCLAIMER</span>
-      <h1>Disclaimer</h1>
-      <p className="page-lede">AnvilPilot is an independent fan-made utility.</p>
+      <header className="legal-header">
+        <span className="section-kicker">LEGAL / DISCLAIMER</span>
+        <h1>Disclaimer</h1>
+        <p className="page-lede">AnvilPilot is an independent fan-made utility.</p>
+      </header>
       <h2>No official affiliation</h2>
       <p>NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</p>
       <h2>Trademarks</h2>

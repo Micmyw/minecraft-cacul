@@ -48,7 +48,7 @@ test("production metadata, social cards, manifest, and security headers are comp
     name: "AnvilPilot – Minecraft Enchantment Calculator",
     short_name: "AnvilPilot",
     start_url: "/",
-    theme_color: "#151B18",
+    theme_color: "#07131F",
   });
 
   for (const selector of ['meta[property="og:image"]', 'meta[name="twitter:image"]']) {

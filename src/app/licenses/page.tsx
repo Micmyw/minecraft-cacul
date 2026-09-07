@@ -11,9 +11,11 @@ export const metadata: Metadata = secondaryPageMetadata(
 export default function LicensesPage() {
   return (
     <article className="prose-page page-width">
-      <span className="section-kicker">LEGAL / OPEN SOURCE</span>
-      <h1>Open Source Licenses</h1>
-      <p className="page-lede">AnvilPilot acknowledges the open-source work used as a reference.</p>
+      <header className="legal-header">
+        <span className="section-kicker">LEGAL / OPEN SOURCE</span>
+        <h1>Open Source Licenses</h1>
+        <p className="page-lede">AnvilPilot acknowledges the open-source work used as a reference.</p>
+      </header>
       <h2>iamcal/enchant-order</h2>
       <p>Reference commit: <code>380c9f8639e48c6b1a668b68b6f3228753fe00fe</code></p>
       <pre className="license-text">{iamcalEnchantOrderLicense}</pre>

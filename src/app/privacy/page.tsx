@@ -11,10 +11,12 @@ export const metadata: Metadata = secondaryPageMetadata(
 export default function PrivacyPage() {
   return (
     <article className="prose-page page-width">
-      <span className="section-kicker">LEGAL / PRIVACY</span>
-      <h1>Privacy</h1>
-      <p>Last updated: August 21, 2026</p>
-      <p className="page-lede">AnvilPilot performs its calculations in your browser and does not require an account.</p>
+      <header className="legal-header">
+        <span className="section-kicker">LEGAL / PRIVACY</span>
+        <h1>Privacy</h1>
+        <p className="legal-updated">Last updated: August 21, 2026</p>
+        <p className="page-lede">AnvilPilot performs its calculations in your browser and does not require an account.</p>
+      </header>
       <h2>Information stored on your device</h2>
       <p>The site uses LocalStorage to remember your latest plan, planner mode, and optimization mode. Clear Saved Plan removes that saved browser entry.</p>
       <h2>Share links</h2>

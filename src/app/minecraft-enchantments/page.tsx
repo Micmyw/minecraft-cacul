@@ -5,6 +5,7 @@ import { items } from "@/data/java/26.2/items";
 import { dataMetadata } from "@/data/java/26.2/metadata";
 import { EnchantmentExplorer } from "@/features/reference/enchantment-explorer";
 import { LoadoutLibrary } from "@/features/reference/loadout-library";
+import { formatIsoDate } from "@/lib/date-format";
 import { secondaryPageMetadata } from "@/lib/seo";
 import { siteConfig } from "@/lib/site-config";
 
@@ -74,7 +75,7 @@ export default function EnchantmentReferencePage() {
       <aside className="source-strip" aria-label="Catalog verification">
         <div>
           <span>OFFICIAL DATA CHECK</span>
-          <strong>Verified September 7, 2026</strong>
+          <strong>Verified {formatIsoDate(dataMetadata.verifiedAt)}</strong>
         </div>
         <p>
           IDs, max levels, costs, item tags, availability tags, and exclusive sets

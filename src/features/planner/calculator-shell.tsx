@@ -21,6 +21,7 @@ import {
   productResultEventName,
   trackProductEvent,
 } from "@/lib/product-analytics";
+import { siteConfig } from "@/lib/site-config";
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { EnchantmentSolverClient } from "@/workers/worker-client";
 import { CalculateButton } from "./calculate-button";
@@ -259,13 +260,18 @@ export function CalculatorShell() {
   };
 
   if (!catalog) {
-    return <div className="calculator-loading" aria-live="polite">Loading the Java 26.2 catalog…</div>;
+    return <div className="calculator-loading" role="status" aria-live="polite">Loading the Java 26.2 catalog…</div>;
   }
 
   const calculateDisabled =
     state.plannerMode === "quick"
       ? !state.targetItemId || state.enchantments.length === 0
       : !state.target.itemId || state.sacrifices.length === 0;
+  const showGoalAndReview = state.plannerMode === "quick" || (
+    Boolean(state.target.itemId) &&
+    state.sacrifices.length > 0 &&
+    state.sacrifices.every((ingredient) => ingredient.enchantments.length > 0)
+  );
   const shownSteps =
     result?.status === "success"
       ? result.steps
@@ -306,21 +312,31 @@ export function CalculatorShell() {
           ) : (
             <InventoryPlanner state={state} catalog={catalog} onChange={updateState} />
           )}
-          <div className="form-section optimization-section">
-            <div className="section-heading"><span>03</span><div><h3>Choose the priority</h3><p>Both modes use stable tie-breakers, so the same plan returns the same order.</p></div></div>
-            <OptimizationMode
-              value={state.optimizeMode}
-              onChange={(optimizeMode) => updateState({ ...state, optimizeMode } as PlanStateV1)}
-            />
-          </div>
-          <CalculateButton
-            disabled={calculateDisabled}
-            calculating={calculating}
-            progress={progress}
-            onCalculate={() => void calculate()}
-            onCancel={cancel}
-          />
-          <p className="privacy-note">Calculation stays in this browser. No plan is sent to a server.</p>
+          {showGoalAndReview && (
+            <>
+              <div className="form-section optimization-section">
+                <div className="section-heading"><span>{state.plannerMode === "quick" ? "03" : "05"}</span><div><h3>Choose optimization goal</h3><p>Both modes use stable tie-breakers, so the same plan returns the same order.</p></div></div>
+                <OptimizationMode
+                  value={state.optimizeMode}
+                  onChange={(optimizeMode) => updateState({ ...state, optimizeMode } as PlanStateV1)}
+                />
+              </div>
+              {state.plannerMode === "inventory" && (
+                <div className="review-stage">
+                  <span>06</span>
+                  <div><strong>Review and calculate</strong><small>{state.sacrifices.length} of 32 materials entered</small></div>
+                </div>
+              )}
+              <CalculateButton
+                disabled={calculateDisabled}
+                calculating={calculating}
+                progress={progress}
+                onCalculate={() => void calculate()}
+                onCancel={cancel}
+              />
+              <p className="privacy-note">Calculation stays in this browser. No plan is sent to a server.</p>
+            </>
+          )}
         </div>
 
         <div
@@ -330,16 +346,16 @@ export function CalculatorShell() {
           tabIndex={-1}
         >
           <div className="result-panel-header">
-            <span>WORK ORDER / 26.2</span>
-            <h2>Recommended anvil order</h2>
+            <span>ANVIL WORK ORDER / JAVA {siteConfig.gameVersion}</span>
+            <h2>Calculation results</h2>
           </div>
           {error && <div className="inline-alert" role="alert">{error}</div>}
           {message && <div className="inline-message" role="status">{message}</div>}
           {calculating ? (
-            <div className="calculating-state">
+            <div className="calculating-state" role="status" aria-live="polite">
               <span className="anvil-pulse" aria-hidden="true" />
-              <h3>Testing legal merge trees…</h3>
-              <p>{Math.round(progress * 100)}% · You can cancel without losing inputs.</p>
+              <h3>Searching valid anvil orders…</h3>
+              <p>Checking compatibility, level cost, and prior-work penalties in your browser.</p>
             </div>
           ) : result ? (
             <>
@@ -358,7 +374,11 @@ export function CalculatorShell() {
                 <path d="M20 25h42l17 17h22l17-17h42M90 42v28M54 80h72M67 70h46l10 20H57z" />
               </svg>
               <h3>Your steps will appear here</h3>
-              <p>Select the item and books you actually have, then calculate a work order with slot-by-slot costs.</p>
+              <p>
+                {state.plannerMode === "quick"
+                  ? "Choose an item and its target enchantments, then calculate a slot-by-slot work order."
+                  : "Enter the target gear and books you actually have, then calculate a slot-by-slot work order."}
+              </p>
             </div>
           )}
         </div>

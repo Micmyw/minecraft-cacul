@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { CalculatorShell } from "@/features/planner/calculator-shell";
 import { enchantments } from "@/data/java/26.2/enchantments";
 import { items } from "@/data/java/26.2/items";
 import { dataMetadata } from "@/data/java/26.2/metadata";
+import { formatIsoDate } from "@/lib/date-format";
 import { siteConfig } from "@/lib/site-config";
 
 export const metadata: Metadata = {
@@ -38,34 +40,47 @@ export default function Home() {
           __html: JSON.stringify(applicationSchema).replaceAll("<", "\\u003c"),
         }}
       />
-      <section className="hero page-width">
-        <div className="hero-copy">
-          <div className="eyebrow"><span>ANVIL WORK ORDER</span><span>JAVA {siteConfig.gameVersion}</span></div>
-          <h1>Minecraft Enchantment Calculator</h1>
-          <p className="hero-lede">
-            Find a low-cost anvil order, see every left and right slot, and catch
-            Too Expensive steps before you spend levels in Survival.
-          </p>
-          <div className="hero-proof">
-            <span>{items.length} item types</span>
-            <span>{enchantments.length} enchantments</span>
-            <span>Verified {dataMetadata.verifiedAt}</span>
+      <section className="hero-shell">
+        <div className="hero page-width">
+          <div className="hero-copy">
+            <div className="eyebrow"><span>ANVIL WORK ORDER</span><span>JAVA EDITION {siteConfig.gameVersion}</span></div>
+            <h1><span>Minecraft</span>{" "}<span>Enchantment Calculator</span></h1>
+            <p className="hero-lede">
+              Build a lower-cost anvil order, follow every left and right slot,
+              and catch Too Expensive steps before you spend levels in Survival.
+            </p>
+            <div className="hero-actions">
+              <Link className="hero-primary-action" href="/#calculator">
+                Start Calculating <span aria-hidden="true">↓</span>
+              </Link>
+              <Link className="hero-secondary-action" href="/minecraft-enchantments">
+                Browse Enchantments
+              </Link>
+            </div>
+            <div className="hero-proof" aria-label="Calculator coverage">
+              <span>Java Edition {siteConfig.gameVersion}</span>
+              <span>{items.length} item groups</span>
+              <span>{enchantments.length} enchantments</span>
+              <span>Local calculation</span>
+            </div>
           </div>
-          <div className="hero-actions">
-            <Link className="hero-primary-action" href="/#calculator">
-              Start Calculating
-            </Link>
-            <Link className="hero-secondary-action" href="/minecraft-enchantments">
-              Browse Enchantments
-            </Link>
+          <div className="hero-visual" aria-hidden="true">
+            <div className="hero-rune hero-rune-one" />
+            <div className="hero-rune hero-rune-two" />
+            <Image
+              className="hero-art"
+              src="/images/enchanted-forge-core.webp"
+              alt=""
+              width={1152}
+              height={768}
+              sizes="(max-width: 900px) 72vw, 520px"
+              loading="eager"
+            />
+            <div className="hero-local-card">
+              <span className="status-light" />
+              <div><strong>Runs in your browser</strong><small>Your plan stays local</small></div>
+            </div>
           </div>
-        </div>
-        <div className="hero-mark" aria-hidden="true">
-          <svg viewBox="0 0 260 180">
-            <path className="hero-mark-outline" d="M30 36h200v44l-48 28h-27v25h46v25H59v-25h46v-25H78L30 80z" />
-            <path className="hero-mark-line" d="M50 57h160M130 20v137" />
-          </svg>
-          <span>PLAN / COMBINE / PRESERVE</span>
         </div>
       </section>
 
@@ -76,8 +91,8 @@ export default function Home() {
         data-clarity-mask="true"
       >
         <div className="tool-intro">
-          <div><span className="section-kicker">LOCAL CALCULATION</span><h2 id="calculator-heading">Build your anvil plan</h2></div>
-          <p>Use Quick Plan for fresh books, or enter the prior work and enchantments on the items you already own.</p>
+          <div><span className="section-kicker">THE ENCHANTMENT WORKBENCH</span><h2 id="calculator-heading">Build your anvil plan</h2></div>
+          <p>Choose the workflow that matches your materials. Every result becomes a slot-by-slot work order you can follow at the anvil.</p>
         </div>
         <CalculatorShell />
       </section>
@@ -94,7 +109,7 @@ export default function Home() {
           </p>
         </section>
         <section>
-          <span className="section-kicker">THREE MOVES</span>
+          <span className="section-kicker">THREE CLEAR MOVES</span>
           <h2>How to Use the Calculator</h2>
           <ol className="how-list">
             <li><span>1</span><div><strong>Choose the item</strong><p>Select a functional item type such as Sword, Pickaxe, Mace, or Spear.</p></div></li>
@@ -130,7 +145,7 @@ export default function Home() {
             <details><summary>Does a mixed book keep every enchantment?</summary><p>No. When a book is applied to an item, enchantments that do not apply to that item are discarded and shown as a warning.</p></details>
           </div>
         </section>
-        <section className="guide-discovery">
+        <section id="guides" className="guide-discovery">
           <span className="section-kicker">DEEPER GUIDES</span>
           <h2>Learn the anvil mechanics</h2>
           <div className="guide-discovery-links">
@@ -141,7 +156,7 @@ export default function Home() {
         </section>
         <aside className="scope-note">
           <strong>Independent tool</strong>
-          <p>AnvilPilot is an unofficial planning aid and is not approved by or associated with Mojang or Microsoft.</p>
+          <p>AnvilPilot is an unofficial planning aid and is not approved by or associated with Mojang or Microsoft. Catalog verified {formatIsoDate(dataMetadata.verifiedAt)}.</p>
         </aside>
       </div>
     </>
