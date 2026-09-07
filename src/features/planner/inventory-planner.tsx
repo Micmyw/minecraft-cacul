@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { EnchantedBookIcon, InventoryCrateIcon, PlusIcon } from "@/components/icons";
 import type { Ingredient, InventorySacrificeKind } from "@/domain/enchanting/types";
 import type { InventoryPlanStateV1 } from "@/lib/share-state";
 import type { CatalogSnapshot } from "@/workers/protocol";
@@ -68,7 +69,7 @@ export function InventoryPlanner({
       aria-labelledby="planner-tab-inventory"
     >
       <div className="mode-intro inventory-mode-intro">
-        <span className="mode-glyph" aria-hidden="true">◇</span>
+        <span className="mode-glyph" aria-hidden="true"><InventoryCrateIcon size={25} /></span>
         <div><strong>Use your real inventory</strong><p>Enter the gear and books you already own, including mixed enchantments and prior work.</p></div>
       </div>
       <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
@@ -125,7 +126,11 @@ export function InventoryPlanner({
             ))}
           </div>
           <div className="add-ingredient-actions">
-            <button type="button" onClick={() => addIngredient("book")} disabled={state.sacrifices.length >= 32}>+ Add enchanted book</button>
+            <button type="button" aria-label="+ Add enchanted book" onClick={() => addIngredient("book")} disabled={state.sacrifices.length >= 32}>
+              <PlusIcon size={18} />
+              <EnchantedBookIcon size={22} />
+              Add enchanted book
+            </button>
             <span>{state.sacrifices.length} / 32 materials</span>
           </div>
         </>

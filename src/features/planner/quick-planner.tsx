@@ -1,3 +1,4 @@
+import { SparkIcon } from "@/components/icons";
 import type { QuickPlanStateV1 } from "@/lib/share-state";
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { EnchantmentPicker } from "./enchantment-picker";
@@ -23,7 +24,7 @@ export function QuickPlanner({
       aria-labelledby="planner-tab-quick"
     >
       <div className="mode-intro quick-mode-intro">
-        <span className="mode-glyph" aria-hidden="true">✦</span>
+        <span className="mode-glyph" aria-hidden="true"><SparkIcon size={23} /></span>
         <div><strong>Fresh-book workflow</strong><p>Choose an item and target enchantments. Fresh, single-enchantment books are assumed.</p></div>
       </div>
       <ExamplePlanButtons onLoad={onLoadExample} />

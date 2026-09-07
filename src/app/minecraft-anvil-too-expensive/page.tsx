@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AlertIcon } from "@/components/icons";
 import { GuideCta } from "@/components/guide-cta";
 import { GuideLinks } from "@/components/guide-links";
 import { tooExpensiveGuideExample } from "@/content/guide-examples";
@@ -22,6 +23,7 @@ export default function TooExpensivePage() {
   return (
     <article className="guide-page page-width">
       <header className="guide-header">
+        <span className="guide-header-icon danger" aria-hidden="true"><AlertIcon size={43} /></span>
         <span className="section-kicker">SURVIVAL ANVIL LIMIT</span>
         <h1>Minecraft Anvil Too Expensive</h1>
         <p className="page-lede">

@@ -1,7 +1,8 @@
+import { AnvilIcon, ArrowRightIcon, SpinnerIcon } from "@/components/icons";
+
 export function CalculateButton({
   disabled,
   calculating,
-  progress,
   onCalculate,
   onCancel,
 }: {
@@ -11,25 +12,22 @@ export function CalculateButton({
   onCalculate: () => void;
   onCancel: () => void;
 }) {
-  const progressPercent = Math.round(Math.min(1, Math.max(0, progress)) * 100);
   return (
     <div className={`calculate-dock${disabled ? " is-disabled" : ""}`}>
       {calculating ? (
-        <>
+        <div className="calculation-progress">
           <div
             className="progress-track"
             role="progressbar"
-            aria-label="Calculation progress"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={progressPercent}
+            aria-label="Searching valid anvil orders"
           >
-            <span style={{ width: `${Math.max(4, progressPercent)}%` }} />
+            <span />
           </div>
+          <p><SpinnerIcon size={18} />Checking compatibility, level cost, and prior-work penalties.</p>
           <button type="button" className="secondary-button" onClick={onCancel}>
             Cancel calculation
           </button>
-        </>
+        </div>
       ) : (
         <button
           type="button"
@@ -37,8 +35,9 @@ export function CalculateButton({
           disabled={disabled}
           onClick={onCalculate}
         >
+          <AnvilIcon size={25} />
           Calculate Anvil Order
-          <span aria-hidden="true">→</span>
+          <ArrowRightIcon className="button-trailing-icon" size={20} />
         </button>
       )}
     </div>

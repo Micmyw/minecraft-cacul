@@ -41,6 +41,23 @@ describe("enchantment reference hub", () => {
     expect(screen.getByText(/Verified September 7, 2026/i)).toBeVisible();
   });
 
+  it("puts catalog lookup before ready-made work orders", () => {
+    render(<EnchantmentReferencePage />);
+    const catalog = screen
+      .getByRole("heading", { name: "Find the right enchantment" })
+      .closest("section");
+    const presets = screen
+      .getByRole("heading", { name: "Start from a proven build" })
+      .closest("section");
+
+    expect(catalog).not.toBeNull();
+    expect(presets).not.toBeNull();
+    const relation = catalog?.compareDocumentPosition(presets as Node) ?? 0;
+    expect(relation & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
   it("filters the ledger by search, item, and incompatibility", async () => {
     const user = userEvent.setup();
     render(<EnchantmentReferencePage />);

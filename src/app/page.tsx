@@ -1,6 +1,17 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  AnvilIcon,
+  AlertIcon,
+  ArrowDownIcon,
+  ArrowRightIcon,
+  CheckIcon,
+  CompassIcon,
+  EnchantedBookIcon,
+  GemIcon,
+  InventoryCrateIcon,
+} from "@/components/icons";
 import { CalculatorShell } from "@/features/planner/calculator-shell";
 import { enchantments } from "@/data/java/26.2/enchantments";
 import { items } from "@/data/java/26.2/items";
@@ -44,24 +55,27 @@ export default function Home() {
         <div className="hero page-width">
           <div className="hero-copy">
             <div className="eyebrow"><span>ANVIL WORK ORDER</span><span>JAVA EDITION {siteConfig.gameVersion}</span></div>
-            <h1><span>Minecraft</span>{" "}<span>Enchantment Calculator</span></h1>
+            <h1><span className="hero-title-game">Minecraft</span>{" "}<span className="hero-title-tool">Enchantment Calculator</span></h1>
             <p className="hero-lede">
               Build a lower-cost anvil order, follow every left and right slot,
               and catch Too Expensive steps before you spend levels in Survival.
             </p>
             <div className="hero-actions">
               <Link className="hero-primary-action" href="/#calculator">
-                Start Calculating <span aria-hidden="true">↓</span>
+                <AnvilIcon size={22} />
+                Start Calculating
+                <ArrowDownIcon className="button-trailing-icon" size={18} />
               </Link>
               <Link className="hero-secondary-action" href="/minecraft-enchantments">
+                <EnchantedBookIcon size={22} />
                 Browse Enchantments
               </Link>
             </div>
             <div className="hero-proof" aria-label="Calculator coverage">
-              <span>Java Edition {siteConfig.gameVersion}</span>
-              <span>{items.length} item groups</span>
-              <span>{enchantments.length} enchantments</span>
-              <span>Local calculation</span>
+              <span><CheckIcon size={14} />Java Edition {siteConfig.gameVersion}</span>
+              <span><InventoryCrateIcon size={15} />{items.length} item groups</span>
+              <span><EnchantedBookIcon size={15} />{enchantments.length} enchantments</span>
+              <span><GemIcon size={15} />Local calculation</span>
             </div>
           </div>
           <div className="hero-visual" aria-hidden="true">
@@ -76,10 +90,6 @@ export default function Home() {
               sizes="(max-width: 900px) 72vw, 520px"
               loading="eager"
             />
-            <div className="hero-local-card">
-              <span className="status-light" />
-              <div><strong>Runs in your browser</strong><small>Your plan stays local</small></div>
-            </div>
           </div>
         </div>
       </section>
@@ -149,9 +159,9 @@ export default function Home() {
           <span className="section-kicker">DEEPER GUIDES</span>
           <h2>Learn the anvil mechanics</h2>
           <div className="guide-discovery-links">
-            <Link href="/minecraft-enchantments"><strong>Minecraft Enchantments Reference</strong><span>Browse all 43 Java 26.2 enchantments, item groups, costs, availability, and conflicts.</span></Link>
-            <Link href="/minecraft-prior-work-penalty"><strong>Prior Work Penalty</strong><span>See the 2^n − 1 table and how combined items inherit their next prior-work count.</span></Link>
-            <Link href="/minecraft-anvil-too-expensive"><strong>Why the Anvil Says Too Expensive</strong><span>Understand the 40-level single-step limit and which order problems can be fixed.</span></Link>
+            <Link href="/minecraft-enchantments"><span className="guide-link-icon" aria-hidden="true"><EnchantedBookIcon size={27} /></span><span className="guide-link-copy"><strong>Minecraft Enchantments Reference</strong><span>Browse all 43 Java 26.2 enchantments, item groups, costs, availability, and conflicts.</span></span><ArrowRightIcon className="guide-link-arrow" size={18} /></Link>
+            <Link href="/minecraft-prior-work-penalty"><span className="guide-link-icon" aria-hidden="true"><CompassIcon size={27} /></span><span className="guide-link-copy"><strong>Prior Work Penalty</strong><span>See the 2^n − 1 table and how combined items inherit their next prior-work count.</span></span><ArrowRightIcon className="guide-link-arrow" size={18} /></Link>
+            <Link href="/minecraft-anvil-too-expensive"><span className="guide-link-icon danger" aria-hidden="true"><AlertIcon size={25} /></span><span className="guide-link-copy"><strong>Why the Anvil Says Too Expensive</strong><span>Understand the 40-level single-step limit and which order problems can be fixed.</span></span><ArrowRightIcon className="guide-link-arrow" size={18} /></Link>
           </div>
         </section>
         <aside className="scope-note">

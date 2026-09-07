@@ -1,4 +1,12 @@
 import type { OptimizeMode, SolveResult } from "@/domain/enchanting/types";
+import {
+  AlertIcon,
+  CheckIcon,
+  CopyIcon,
+  ErrorIcon,
+  ResetIcon,
+  ShareIcon,
+} from "@/components/icons";
 import { ComparisonCard } from "./comparison-card";
 import { PlanQualityBadge } from "./plan-quality-badge";
 
@@ -18,7 +26,7 @@ export function ResultSummary({
   if (result.status === "invalid-input") {
     return (
       <div className="result-error" role="alert">
-        <h3>Check your plan</h3>
+        <h3><ErrorIcon size={22} />Check your plan</h3>
         <ul>{result.errors.map((error) => <li key={error}>{error}</li>)}</ul>
       </div>
     );
@@ -27,7 +35,7 @@ export function ResultSummary({
     const exhaustive = result.quality === "exact-optimal";
     return (
       <div className="result-summary no-plan-summary">
-        <div className="result-state-label danger-state"><span aria-hidden="true">!</span> No legal plan</div>
+        <div className="result-state-label danger-state"><ErrorIcon size={17} /> No legal plan</div>
         <div className="result-title-row">
           <h3>
             {exhaustive
@@ -43,9 +51,9 @@ export function ResultSummary({
         </p>
         {[...new Set(result.warnings)].map((warning) => <p className="result-warning" key={warning}>{warning}</p>)}
         <div className="result-actions">
-          <button type="button" onClick={onCopyLink}>Copy Share Link</button>
-          <button type="button" onClick={onCopySteps}>Copy Steps</button>
-          <button type="button" className="secondary-button" onClick={onStartOver}>Start Over</button>
+          <button type="button" className="action-share" onClick={onCopyLink}><ShareIcon size={17} />Copy Share Link</button>
+          <button type="button" className="action-copy" onClick={onCopySteps}><CopyIcon size={17} />Copy Steps</button>
+          <button type="button" className="secondary-button action-reset" onClick={onStartOver}><ResetIcon size={17} />Start Over</button>
         </div>
       </div>
     );
@@ -59,7 +67,7 @@ export function ResultSummary({
   );
   return (
     <div className="result-summary">
-      <div className="result-state-label success-state"><span aria-hidden="true">✓</span> Survival-ready</div>
+      <div className="result-state-label success-state"><CheckIcon size={17} /> Survival-ready</div>
       <div className="result-title-row">
         <h3>Your anvil work order</h3>
         <PlanQualityBadge quality={result.quality} />
@@ -71,7 +79,7 @@ export function ResultSummary({
       </p>
       {result.legalInSurvival && (
         <div className="survival-banner">
-          <span className="status-light" aria-hidden="true" />
+          <span className="survival-icon" aria-hidden="true"><CheckIcon size={18} /></span>
           <p><strong>Every anvil step costs 39 levels or less.</strong><span>Ready to follow in Survival.</span></p>
         </div>
       )}
@@ -90,16 +98,16 @@ export function ResultSummary({
       />
       {visibleWarnings.length > 0 && (
         <div className="warning-list">
-          {visibleWarnings.map((warning) => <p key={warning}>{warning}</p>)}
+          {visibleWarnings.map((warning) => <p key={warning}><AlertIcon size={17} />{warning}</p>)}
         </div>
       )}
       <p className="search-stat">
         Explored {result.statistics.exploredStates.toLocaleString()} states.
       </p>
       <div className="result-actions">
-        <button type="button" onClick={onCopyLink}>Copy Share Link</button>
-        <button type="button" onClick={onCopySteps}>Copy Steps</button>
-        <button type="button" className="secondary-button" onClick={onStartOver}>Start Over</button>
+        <button type="button" className="action-share" onClick={onCopyLink}><ShareIcon size={17} />Copy Share Link</button>
+        <button type="button" className="action-copy" onClick={onCopySteps}><CopyIcon size={17} />Copy Steps</button>
+        <button type="button" className="secondary-button action-reset" onClick={onStartOver}><ResetIcon size={17} />Start Over</button>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { EnchantedBookIcon } from "@/components/icons";
 import { enchantments } from "@/data/java/26.2/enchantments";
 import { items } from "@/data/java/26.2/items";
 import { dataMetadata } from "@/data/java/26.2/metadata";
@@ -58,7 +59,7 @@ export default function EnchantmentReferencePage() {
       <header className="reference-header">
         <div>
           <span className="section-kicker">JAVA 26.2 / FIELD REFERENCE</span>
-          <h1>Minecraft Enchantments Reference</h1>
+          <div className="reference-title-row"><span className="reference-title-icon" aria-hidden="true"><EnchantedBookIcon size={48} /></span><h1>Minecraft Enchantments Reference</h1></div>
           <p className="page-lede">
             Browse the complete current Java catalog, compare book costs and
             availability, check conflicts, or load a verified build into the anvil
@@ -85,8 +86,8 @@ export default function EnchantmentReferencePage() {
         <a href={dataMetadata.versionMetadataUrl}>View Mojang version metadata</a>
       </aside>
 
-      <LoadoutLibrary />
       <EnchantmentExplorer />
+      <LoadoutLibrary />
 
       <section className="reference-notes" aria-labelledby="reference-notes-title">
         <div>

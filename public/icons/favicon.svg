@@ -1,11 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AnvilPilot enchanted forge mark">
-  <rect width="64" height="64" rx="12" fill="#07131f"/>
-  <path d="M8 19 32 6l24 13v26L32 58 8 45Z" fill="#0d2635" stroke="#36d7d9" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M9.5 19 32 7l22.5 12L32 31Z" fill="#8b5cf6"/>
-  <path d="M9.5 19 32 31v25L9.5 44Z" fill="#0a1b29"/>
-  <path d="M54.5 19 32 31v25l22.5-12Z" fill="#102d3c"/>
-  <path d="M14 18h36v9l-8 6h-5v8h9v7H18v-7h9v-8h-5l-8-6Z" fill="#07131f" stroke="#36d7d9" stroke-width="2" stroke-linejoin="round"/>
-  <path d="m32 19 7 10-5 5v9l-2 4-2-4v-9l-5-5Z" fill="#9fe870"/>
-  <path d="m32 19 3.5 10L32 34l-3.5-5Z" fill="#d9ffad"/>
-  <path d="m32 3 4 4-4 4-4-4Zm-25 12 4 4-4 4-4-4Zm50 0 4 4-4 4-4-4Zm-25 38 4 4-4 4-4-4Z" fill="#f4b84a"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AnvilPilot forge mark">
+  <rect width="64" height="64" rx="10" fill="#06111d"/>
+  <path d="M8 19 15 10h34l7 9-6 9h-6v7l6 6v13H14V41l6-6v-7h-6l-6-9Z" fill="#263e50" stroke="#36d7d9" stroke-width="2" stroke-linejoin="round"/>
+  <path d="m10 19 7-9h30l7 9-6 5H16l-6-5Z" fill="#8b5cf6"/>
+  <path d="m18 13-4 6h36l-4-6H18Z" fill="#c4a8ff" opacity=".78"/>
+  <path d="M22 27h20v10l6 6H16l6-6V27Z" fill="#668092"/>
+  <path d="M18 43h28v8H18z" fill="#173247"/>
+  <path d="m32 29-7 8 7 9 7-9-7-8Zm0 5 2.5 3-2.5 3-2.5-3 2.5-3Z" fill="#9fe870"/>
 </svg>

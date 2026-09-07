@@ -9,6 +9,7 @@ import PriorWorkPage, {
 import { metadata as homeMetadata } from "@/app/page";
 import sitemap from "@/app/sitemap";
 import { SiteFooter } from "@/components/site-footer";
+import AboutPage from "@/app/about/page";
 
 afterEach(() => cleanup());
 
@@ -72,5 +73,14 @@ describe("guide page SEO and content contracts", () => {
     expect(screen.getByRole("link", { name: "Prior Work Penalty" })).toHaveAttribute("href", "/minecraft-prior-work-penalty");
     expect(screen.getByRole("link", { name: "Too Expensive" })).toHaveAttribute("href", "/minecraft-anvil-too-expensive");
     expect(screen.getByRole("link", { name: "Enchantments" })).toHaveAttribute("href", "/minecraft-enchantments");
+  });
+
+  it("explains planner modes and result qualities as separate capabilities", () => {
+    render(<AboutPage />);
+
+    expect(screen.getByRole("heading", { name: "Quick Plan" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Inventory Plan" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Exact Optimal" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Best Found" })).toBeVisible();
   });
 });

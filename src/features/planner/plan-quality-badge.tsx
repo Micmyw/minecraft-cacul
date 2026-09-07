@@ -1,4 +1,5 @@
 import type { PlanQuality } from "@/domain/enchanting/types";
+import { CheckIcon, SparkIcon } from "@/components/icons";
 
 export function PlanQualityBadge({
   quality,
@@ -15,9 +16,10 @@ export function PlanQualityBadge({
       : quality === "exact-optimal"
         ? "Exact Optimal"
         : "Best Found";
+  const Icon = quality === "exact-optimal" ? CheckIcon : SparkIcon;
   return (
     <span className={`quality-badge ${quality}`}>
-      <span className="quality-dot" aria-hidden="true" />
+      <Icon size={15} />
       {label}
     </span>
   );

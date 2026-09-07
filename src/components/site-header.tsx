@@ -1,14 +1,26 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRef } from "react";
+import { BrandMark, MenuIcon } from "@/components/icons";
 import { siteConfig } from "@/lib/site-config";
+
+const navigation = [
+  { href: "/#calculator", label: "Calculator", className: "nav-calculator" },
+  { href: "/minecraft-enchantments", label: "Enchantments" },
+  { href: "/#guides", label: "Guides" },
+  { href: "/about", label: "About" },
+] as const;
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const isGuidePage = pathname === "/minecraft-prior-work-penalty"
-    || pathname === "/minecraft-anvil-too-expensive";
+  const mobileMenuRef = useRef<HTMLDetailsElement>(null);
+  const isCurrentPage = (href: string) => {
+    if (href === "/#calculator") return pathname === "/";
+    if (href.includes("#")) return false;
+    return pathname === href;
+  };
 
   return (
     <header className="site-header">
@@ -19,49 +31,38 @@ export function SiteHeader() {
           aria-label={`${siteConfig.name} – ${siteConfig.productName}`}
         >
           <span className="brand-mark" aria-hidden="true">
-            <Image
-              src="/images/anvilpilot-forge-mark.webp"
-              alt=""
-              width={44}
-              height={44}
-              sizes="44px"
-              loading="eager"
-              fetchPriority="high"
-            />
+            <BrandMark size={38} />
           </span>
           <span className="brand-copy">
-            <strong>{siteConfig.name}</strong>
+            <strong><span className="brand-name-anvil">Anvil</span><span className="brand-name-pilot">Pilot</span></strong>
             <small>Enchantment workbench</small>
           </span>
         </Link>
         <nav className="desktop-nav" aria-label="Primary navigation">
-          <Link
-            className="nav-calculator"
-            href="/#calculator"
-            aria-current={pathname === "/" ? "page" : undefined}
-          >
-            Calculator
-          </Link>
-          <Link
-            href="/minecraft-enchantments"
-            aria-current={pathname === "/minecraft-enchantments" ? "page" : undefined}
-          >
-            Enchantments
-          </Link>
-          <Link href="/#guides" aria-current={isGuidePage ? "page" : undefined}>Guides</Link>
-          <Link href="/about" aria-current={pathname === "/about" ? "page" : undefined}>About</Link>
-        </nav>
-        <details className="mobile-nav-menu">
-          <summary aria-label="More navigation"><span aria-hidden="true">☰</span></summary>
-          <nav aria-label="Mobile navigation">
+          {navigation.map((item) => (
             <Link
-              href="/minecraft-enchantments"
-              aria-current={pathname === "/minecraft-enchantments" ? "page" : undefined}
+              key={item.href}
+              className={"className" in item ? item.className : undefined}
+              href={item.href}
+              aria-current={isCurrentPage(item.href) ? "page" : undefined}
             >
-              Enchantments
+              {item.label}
             </Link>
-            <Link href="/#guides" aria-current={isGuidePage ? "page" : undefined}>Guides</Link>
-            <Link href="/about" aria-current={pathname === "/about" ? "page" : undefined}>About</Link>
+          ))}
+        </nav>
+        <details className="mobile-nav-menu" ref={mobileMenuRef}>
+          <summary aria-label="More navigation"><MenuIcon size={22} /></summary>
+          <nav aria-label="Mobile navigation">
+            {navigation.slice(1).map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={isCurrentPage(item.href) ? "page" : undefined}
+                onClick={() => mobileMenuRef.current?.removeAttribute("open")}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
         </details>
       </div>

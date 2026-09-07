@@ -1,4 +1,5 @@
 import { useId } from "react";
+import { EnchantedBookIcon, RemoveIcon } from "@/components/icons";
 import type { EnchantmentLevel } from "@/domain/enchanting/types";
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { EnchantmentSearch } from "./enchantment-search";
@@ -49,7 +50,7 @@ export function EnchantmentPicker({
             if (!definition) return null;
             return (
               <div className="enchantment-row" key={enchantment.enchantmentId}>
-                <span>{definition.name}</span>
+                <span className="selected-enchantment-name"><EnchantedBookIcon size={21} /><span>{definition.name}</span></span>
                 <label className="sr-only" htmlFor={`${id}-${enchantment.enchantmentId}`}>
                   {definition.name} level
                 </label>
@@ -86,6 +87,7 @@ export function EnchantmentPicker({
                     )
                   }
                 >
+                  <RemoveIcon size={15} />
                   Remove
                 </button>
               </div>

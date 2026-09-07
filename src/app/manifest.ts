@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Plan lower-cost Minecraft Java Edition anvil orders with shareable steps.",
     start_url: "/",
     display: "standalone",
-    background_color: "#07131F",
-    theme_color: "#07131F",
+    background_color: "#06111D",
+    theme_color: "#06111D",
     icons: [
       {
         src: "/icons/favicon.ico",
@@ -34,6 +34,24 @@ export default function manifest(): MetadataRoute.Manifest {
         sizes: "180x180",
         type: "image/png",
         purpose: "any",
+      },
+      {
+        src: "/icons/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/icons/icon-maskable-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
       },
     ],
   };

@@ -1,3 +1,4 @@
+import { AnvilIcon, ArrowRightIcon } from "@/components/icons";
 import { loadoutPresets } from "@/content/loadout-presets";
 import { enchantmentById } from "@/data/java/26.2/enchantments";
 import { encodePlanState } from "@/lib/share-state";
@@ -21,7 +22,7 @@ export function LoadoutLibrary() {
         {loadoutPresets.map((preset) => (
           <article className="loadout-card" key={preset.id}>
             <div className="loadout-card-topline">
-              <span>{preset.itemLabel}</span>
+              <span><AnvilIcon size={17} />{preset.itemLabel}</span>
               <span>{preset.state.enchantments.length} books</span>
             </div>
             <h3>{preset.label}</h3>
@@ -39,7 +40,7 @@ export function LoadoutLibrary() {
               href={`/#plan=${encodePlanState(preset.state)}`}
               aria-label={`Load ${preset.label} in calculator`}
             >
-              Load in calculator <span aria-hidden="true">→</span>
+              Load in calculator <ArrowRightIcon size={18} />
             </a>
           </article>
         ))}

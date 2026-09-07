@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { SearchIcon } from "@/components/icons";
 import type { EnchantmentLevel } from "@/domain/enchanting/types";
 import type { CatalogSnapshot } from "@/workers/protocol";
 
@@ -104,64 +105,67 @@ export function EnchantmentSearch({
       <label className="field-label" htmlFor={`${id}-input`}>
         Add enchantment
       </label>
-      <input
-        id={`${id}-input`}
-        type="search"
-        value={query}
-        disabled={disabled}
-        autoComplete="off"
-        role="combobox"
-        aria-autocomplete="list"
-        aria-expanded={open && !disabled}
-        aria-controls={resultsId}
-        aria-activedescendant={open ? activeOptionId : undefined}
-        onFocus={() => {
-          setOpen(true);
-          setActiveEnchantmentId(null);
-        }}
-        onChange={(event) => {
-          setQuery(event.target.value);
-          setOpen(true);
-          setActiveEnchantmentId(null);
-        }}
-        onKeyDown={(event) => {
-          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-            event.preventDefault();
+      <div className="search-input-shell">
+        <SearchIcon size={19} />
+        <input
+          id={`${id}-input`}
+          type="search"
+          value={query}
+          disabled={disabled}
+          autoComplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={open && !disabled}
+          aria-controls={resultsId}
+          aria-activedescendant={open ? activeOptionId : undefined}
+          onFocus={() => {
             setOpen(true);
+            setActiveEnchantmentId(null);
+          }}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+            setActiveEnchantmentId(null);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+              event.preventDefault();
+              setOpen(true);
 
-            if (enabledResults.length === 0) {
-              setActiveEnchantmentId(null);
+              if (enabledResults.length === 0) {
+                setActiveEnchantmentId(null);
+                return;
+              }
+
+              const currentIndex = enabledResults.findIndex(
+                (enchantment) => enchantment.id === activeEnchantmentId,
+              );
+              const nextIndex =
+                event.key === "ArrowDown"
+                  ? currentIndex < enabledResults.length - 1
+                    ? currentIndex + 1
+                    : 0
+                  : currentIndex > 0
+                    ? currentIndex - 1
+                    : enabledResults.length - 1;
+              setActiveEnchantmentId(enabledResults[nextIndex].id);
               return;
             }
 
-            const currentIndex = enabledResults.findIndex(
-              (enchantment) => enchantment.id === activeEnchantmentId,
-            );
-            const nextIndex =
-              event.key === "ArrowDown"
-                ? currentIndex < enabledResults.length - 1
-                  ? currentIndex + 1
-                  : 0
-                : currentIndex > 0
-                  ? currentIndex - 1
-                  : enabledResults.length - 1;
-            setActiveEnchantmentId(enabledResults[nextIndex].id);
-            return;
-          }
+            if (event.key === "Enter" && open && activeResult) {
+              event.preventDefault();
+              selectEnchantment(activeResult.id);
+              return;
+            }
 
-          if (event.key === "Enter" && open && activeResult) {
-            event.preventDefault();
-            selectEnchantment(activeResult.id);
-            return;
-          }
-
-          if (event.key === "Escape") {
-            event.preventDefault();
-            setQuery("");
-            closeResults();
-          }
-        }}
-      />
+            if (event.key === "Escape") {
+              event.preventDefault();
+              setQuery("");
+              closeResults();
+            }
+          }}
+        />
+      </div>
 
       {disabled ? (
         <p className="field-hint">Choose a target item first.</p>

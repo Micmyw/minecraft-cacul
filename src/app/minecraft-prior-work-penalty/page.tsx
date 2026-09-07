@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CompassIcon } from "@/components/icons";
 import { GuideCta } from "@/components/guide-cta";
 import { GuideLinks } from "@/components/guide-links";
 import { priorWorkGuideExample } from "@/content/guide-examples";
@@ -28,6 +29,7 @@ export default function PriorWorkPenaltyPage() {
   return (
     <article className="guide-page page-width">
       <header className="guide-header">
+        <span className="guide-header-icon" aria-hidden="true"><CompassIcon size={46} /></span>
         <span className="section-kicker">JAVA ANVIL MECHANICS</span>
         <h1>Minecraft Prior Work Penalty</h1>
         <p className="page-lede">

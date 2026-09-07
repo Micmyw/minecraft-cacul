@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { EditIcon, EnchantedBookIcon, ExpandIcon, RemoveIcon } from "@/components/icons";
 import { MAX_PRIOR_WORK, type Ingredient } from "@/domain/enchanting/types";
 import { priorWorkPenalty } from "@/domain/enchanting/prior-work";
 import type { CatalogSnapshot } from "@/workers/protocol";
@@ -27,9 +28,9 @@ export function IngredientEditor({
   return (
     <section className={`ingredient-card${collapsed ? " is-collapsed" : ""}`}>
       <div className="ingredient-title">
-        <span>{label}</span>
+        <span className="ingredient-item-icon" aria-hidden="true"><EnchantedBookIcon size={27} /></span>
         <div className="ingredient-title-copy">
-          <strong>Enchanted Book</strong>
+          <strong>{label} · Enchanted Book</strong>
           <small>
             {enchantmentCount} {enchantmentCount === 1 ? "enchantment" : "enchantments"}
             {" · "}prior work {ingredient.priorWork}
@@ -43,6 +44,7 @@ export function IngredientEditor({
           aria-label={`${collapsed ? "Edit" : "Collapse"} ${label} details`}
           onClick={() => setCollapsed((value) => !value)}
         >
+          {collapsed ? <EditIcon size={16} /> : <ExpandIcon size={16} />}
           {collapsed ? "Edit" : "Collapse"}
         </button>
         <button
@@ -51,6 +53,7 @@ export function IngredientEditor({
           aria-label={`Remove ${label}`}
           onClick={onRemove}
         >
+          <RemoveIcon size={16} />
           Remove
         </button>
       </div>

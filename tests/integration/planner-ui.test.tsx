@@ -145,7 +145,7 @@ describe("planner UI", () => {
     expect(inventory).toHaveFocus();
   });
 
-  it("exposes calculation progress to assistive technology", () => {
+  it("announces indeterminate calculation progress without inventing a percentage", () => {
     render(
       <CalculateButton
         disabled={false}
@@ -155,10 +155,11 @@ describe("planner UI", () => {
         onCancel={() => {}}
       />,
     );
-    expect(screen.getByRole("progressbar", { name: "Calculation progress" })).toHaveAttribute(
-      "aria-valuenow",
-      "42",
-    );
+    const progressbar = screen.getByRole("progressbar", {
+      name: "Searching valid anvil orders",
+    });
+    expect(progressbar).not.toHaveAttribute("aria-valuenow");
+    expect(screen.getByText("Checking compatibility, level cost, and prior-work penalties.")).toBeVisible();
   });
 
   it("previews the next prior-work penalty beside inventory inputs", () => {

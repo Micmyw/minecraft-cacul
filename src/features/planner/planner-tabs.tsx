@@ -1,10 +1,11 @@
 import type { KeyboardEvent } from "react";
+import { InventoryCrateIcon, SparkIcon } from "@/components/icons";
 
 export type PlannerMode = "quick" | "inventory";
 
 const tabs = [
-  ["quick", "Quick Plan", "Fresh books", "✦"],
-  ["inventory", "Inventory Plan", "Your real gear", "◇"],
+  ["quick", "Quick Plan", "Fresh books", SparkIcon],
+  ["inventory", "Inventory Plan", "Your real gear", InventoryCrateIcon],
 ] as const;
 
 export function PlannerTabs({
@@ -31,7 +32,7 @@ export function PlannerTabs({
 
   return (
     <div className="planner-tabs" role="tablist" aria-label="Planner mode">
-      {tabs.map(([mode, label, description, icon]) => (
+      {tabs.map(([mode, label, description, Icon]) => (
         <button
           key={mode}
           id={`planner-tab-${mode}`}
@@ -45,7 +46,7 @@ export function PlannerTabs({
           onClick={() => onChange(mode)}
           onKeyDown={(event) => handleKeyDown(event, mode)}
         >
-          <span className="planner-tab-icon" aria-hidden="true">{icon}</span>
+          <span className="planner-tab-icon" aria-hidden="true"><Icon size={24} /></span>
           <span className="planner-tab-copy"><strong>{label}</strong><small aria-hidden="true">{description}</small></span>
         </button>
       ))}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { EmptyIcon, ResetIcon, SpinnerIcon } from "@/components/icons";
 import type { SolveResult } from "@/domain/enchanting/types";
 import {
   clearSavedPlan,
@@ -297,6 +298,7 @@ export function CalculatorShell() {
             }
           }}
         >
+          <ResetIcon size={16} />
           Clear Saved Plan
         </button>
       </div>
@@ -353,7 +355,7 @@ export function CalculatorShell() {
           {message && <div className="inline-message" role="status">{message}</div>}
           {calculating ? (
             <div className="calculating-state" role="status" aria-live="polite">
-              <span className="anvil-pulse" aria-hidden="true" />
+              <span className="anvil-pulse" aria-hidden="true"><SpinnerIcon size={34} /></span>
               <h3>Searching valid anvil orders…</h3>
               <p>Checking compatibility, level cost, and prior-work penalties in your browser.</p>
             </div>
@@ -370,9 +372,7 @@ export function CalculatorShell() {
             </>
           ) : (
             <div className="empty-result">
-              <svg viewBox="0 0 180 110" aria-hidden="true">
-                <path d="M20 25h42l17 17h22l17-17h42M90 42v28M54 80h72M67 70h46l10 20H57z" />
-              </svg>
+              <span className="empty-result-icon" aria-hidden="true"><EmptyIcon size={72} /></span>
               <h3>Your steps will appear here</h3>
               <p>
                 {state.plannerMode === "quick"

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Atkinson_Hyperlegible, Sora } from "next/font/google";
+import { Atkinson_Hyperlegible, Pixelify_Sans, Sora, Tektur } from "next/font/google";
 import { SiteAnalytics } from "@/components/site-analytics";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -11,6 +11,20 @@ const displayFont = Sora({
   variable: "--font-display",
   subsets: ["latin"],
   weight: ["500", "600", "700", "800"],
+  display: "swap",
+});
+
+const blockFont = Tektur({
+  variable: "--font-block",
+  subsets: ["latin"],
+  weight: "variable",
+  display: "swap",
+});
+
+const pixelFont = Pixelify_Sans({
+  variable: "--font-pixel",
+  subsets: ["latin"],
+  weight: "variable",
   display: "swap",
 });
 
@@ -55,7 +69,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html
       lang="en"
-      className={`${displayFont.variable} ${bodyFont.variable}`}
+      className={`${displayFont.variable} ${bodyFont.variable} ${blockFont.variable} ${pixelFont.variable}`}
       data-scroll-behavior="smooth"
     >
       <body>

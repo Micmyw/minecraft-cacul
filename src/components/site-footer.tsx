@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { BrandMark } from "@/components/icons";
 import { siteConfig } from "@/lib/site-config";
 
 export function SiteFooter() {
@@ -9,9 +9,9 @@ export function SiteFooter() {
         <div>
           <Link className="brand footer-brand" href="/">
             <span className="brand-mark" aria-hidden="true">
-              <Image src="/images/anvilpilot-forge-mark.webp" alt="" width={48} height={48} sizes="48px" loading="eager" />
+              <BrandMark size={40} />
             </span>
-            <span className="brand-copy"><strong>{siteConfig.name}</strong><small>Enchantment workbench</small></span>
+            <span className="brand-copy"><strong><span className="brand-name-anvil">Anvil</span><span className="brand-name-pilot">Pilot</span></strong><small>Enchantment workbench</small></span>
           </Link>
           <p>Independent anvil planning for Minecraft {siteConfig.edition} {siteConfig.gameVersion}.</p>
         </div>

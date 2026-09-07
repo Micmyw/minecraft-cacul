@@ -1,6 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import {
+  EnchantedBookIcon,
+  FilterIcon,
+  RemoveIcon,
+  SearchIcon,
+} from "@/components/icons";
 import { enchantments } from "@/data/java/26.2/enchantments";
 import { items } from "@/data/java/26.2/items";
 
@@ -75,17 +81,20 @@ export function EnchantmentExplorer() {
 
       <div className="reference-filter-panel">
         <div className="reference-filter-field">
-          <label htmlFor="reference-search">Search enchantments</label>
-          <input
-            id="reference-search"
-            type="search"
-            value={query}
-            placeholder="Try Mending or protection"
-            onChange={(event) => setQuery(event.target.value)}
-          />
+          <label htmlFor="reference-search"><SearchIcon size={16} />Search enchantments</label>
+          <div className="search-input-shell reference-search-shell">
+            <SearchIcon size={19} />
+            <input
+              id="reference-search"
+              type="search"
+              value={query}
+              placeholder="Try Mending or protection"
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </div>
         </div>
         <div className="reference-filter-field">
-          <label htmlFor="reference-item">Filter by item</label>
+          <label htmlFor="reference-item"><FilterIcon size={16} />Filter by item</label>
           <select
             id="reference-item"
             value={itemId}
@@ -98,7 +107,7 @@ export function EnchantmentExplorer() {
           </select>
         </div>
         <div className="reference-filter-field">
-          <label htmlFor="reference-availability">Filter by availability</label>
+          <label htmlFor="reference-availability"><FilterIcon size={16} />Filter by availability</label>
           <select
             id="reference-availability"
             value={availability}
@@ -125,6 +134,7 @@ export function EnchantmentExplorer() {
           disabled={!hasFilters}
           onClick={clearFilters}
         >
+          <RemoveIcon size={16} />
           Clear filters
         </button>
       </div>
@@ -145,9 +155,12 @@ export function EnchantmentExplorer() {
               key={enchantment.id}
             >
               <header>
-                <div>
-                  <span className="entry-id">{enchantment.id.replaceAll("_", " ")}</span>
-                  <h3>{enchantment.name}</h3>
+                <div className="entry-title">
+                  <span className="entry-book-icon" aria-hidden="true"><EnchantedBookIcon size={30} /></span>
+                  <div>
+                    <span className="entry-id">{enchantment.id.replaceAll("_", " ")}</span>
+                    <h3>{enchantment.name}</h3>
+                  </div>
                 </div>
                 <strong className="max-level">
                   MAX {romanLevels[enchantment.maxLevel] ?? enchantment.maxLevel}
@@ -159,29 +172,37 @@ export function EnchantmentExplorer() {
                 {enchantment.curse && <span className="tag-curse">Curse</span>}
                 {enchantment.tradeable && <span>Tradeable tag</span>}
               </div>
-              <dl className="enchantment-facts">
+              <dl className="enchantment-facts enchantment-summary-facts">
                 <div><dt>Book cost</dt><dd>{enchantment.bookCost} × level</dd></div>
-                <div><dt>Enchanting weight</dt><dd>{enchantment.weight}</dd></div>
                 <div><dt>Item groups</dt><dd>{enchantment.supportedItemIds.length}</dd></div>
               </dl>
-              <details>
-                <summary>Works with {enchantment.supportedItemIds.length} item groups</summary>
-                <p>
-                  {enchantment.supportedItemIds
-                    .map((supportedId) => itemNames.get(supportedId) ?? supportedId)
-                    .join(", ")}
-                </p>
+              <details className="enchantment-details">
+                <summary>View items, weight, and conflicts</summary>
+                <div className="enchantment-detail-grid">
+                  <dl>
+                    <div><dt>Enchanting weight</dt><dd>{enchantment.weight}</dd></div>
+                    <div><dt>Supported item groups</dt><dd>{enchantment.supportedItemIds.length}</dd></div>
+                  </dl>
+                  <div>
+                    <strong>Works with</strong>
+                    <p>
+                      {enchantment.supportedItemIds
+                        .map((supportedId) => itemNames.get(supportedId) ?? supportedId)
+                        .join(", ")}
+                    </p>
+                  </div>
+                  <div className="conflict-readout">
+                    <strong>Conflicts</strong>
+                    <p>
+                      {enchantment.incompatibleWith.length > 0
+                        ? enchantment.incompatibleWith
+                            .map((id) => enchantmentNames.get(id) ?? id)
+                            .join(", ")
+                        : "No mutually exclusive enchantments"}
+                    </p>
+                  </div>
+                </div>
               </details>
-              <div className="conflict-readout">
-                <span>Conflicts</span>
-                <p>
-                  {enchantment.incompatibleWith.length > 0
-                    ? enchantment.incompatibleWith
-                        .map((id) => enchantmentNames.get(id) ?? id)
-                        .join(", ")
-                    : "No mutually exclusive enchantments"}
-                </p>
-              </div>
             </article>
           ))}
         </div>

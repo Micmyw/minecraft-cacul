@@ -1,4 +1,5 @@
 import { MAX_PRIOR_WORK, type Ingredient } from "@/domain/enchanting/types";
+import { AnvilIcon } from "@/components/icons";
 import { priorWorkPenalty } from "@/domain/enchanting/prior-work";
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { EnchantmentPicker } from "./enchantment-picker";
@@ -14,7 +15,10 @@ export function TargetEditor({
 }) {
   return (
     <section className="ingredient-card target-card">
-      <div className="ingredient-title"><span>Target</span><strong>The item you keep</strong></div>
+      <div className="ingredient-title">
+        <span className="ingredient-item-icon" aria-hidden="true"><AnvilIcon size={27} /></span>
+        <div className="ingredient-title-copy"><strong>Target gear</strong><small>The item you keep</small></div>
+      </div>
       <label className="field-label" htmlFor="inventory-target">Target item</label>
       <select
         id="inventory-target"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AnvilIcon, CheckIcon, EnchantedBookIcon, ResetIcon } from "@/components/icons";
 import type { CombineStep } from "@/domain/enchanting/types";
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { formatIngredient } from "./planner-format";
@@ -67,6 +68,7 @@ export function ResultSteps({
           disabled={completed.size === 0}
           onClick={() => setChecklist({ planKey, completed: new Set() })}
         >
+          <ResetIcon size={15} />
           Reset step checklist
         </button>
       </div>
@@ -79,7 +81,7 @@ export function ResultSteps({
             key={step.id}
           >
             <div className="step-card-heading">
-              <div className="step-number">Step {index + 1}</div>
+              <div className="step-number"><AnvilIcon size={21} />Step {index + 1}</div>
               <label className="step-complete-control">
                 <input
                   type="checkbox"
@@ -87,19 +89,19 @@ export function ResultSteps({
                   aria-label={`Mark step ${index + 1} complete`}
                   onChange={() => toggleStep(step.id)}
                 />
-                <span>{isComplete ? "Done" : "Mark done"}</span>
+                <span>{isComplete && <CheckIcon size={15} />}{isComplete ? "Done" : "Mark done"}</span>
               </label>
             </div>
             <div className="merge-slots">
-              <div className="anvil-slot left-slot"><span><i aria-hidden="true">L</i>Left slot</span><strong>{formatIngredient(step.left, catalog)}</strong><small>Left prior work: {step.left.priorWork}</small></div>
-              <div className="anvil-slot right-slot"><span><i aria-hidden="true">R</i>Right slot</span><strong>{formatIngredient(step.right, catalog)}</strong><small>Right prior work: {step.right.priorWork}</small></div>
+              <div className="anvil-slot left-slot"><span><i aria-hidden="true">L</i>Left slot</span><strong><AnvilIcon size={20} />{formatIngredient(step.left, catalog)}</strong><small>Left prior work: {step.left.priorWork}</small></div>
+              <div className="anvil-slot right-slot"><span><i aria-hidden="true">R</i>Right slot</span><strong><EnchantedBookIcon size={20} />{formatIngredient(step.right, catalog)}</strong><small>Right prior work: {step.right.priorWork}</small></div>
             </div>
             <svg className="merge-rail" viewBox="0 0 240 42" aria-hidden="true">
               <path d="M4 5h68l28 16h40l28-16h68M120 21v16" />
               <circle cx="120" cy="21" r="4" />
             </svg>
             <div className="step-result">
-              <div className="result-slot"><span>Result</span><strong>{formatIngredient(step.result, catalog)}</strong><small>New prior work: {step.result.priorWork}</small></div>
+              <div className="result-slot"><span>Result</span><strong><CheckIcon size={19} />{formatIngredient(step.result, catalog)}</strong><small>New prior work: {step.result.priorWork}</small></div>
               <div className="step-cost"><span>Cost</span><strong>{step.levelCost} levels</strong></div>
             </div>
             {band.label && (
