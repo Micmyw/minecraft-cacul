@@ -1,12 +1,8 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import {
-  AnalyticsSettingsButton,
-  SiteAnalytics,
-  analyticsConsentStorageKey,
-} from "@/components/site-analytics";
+import { SiteAnalytics } from "@/components/site-analytics";
 
-describe("analytics consent", () => {
+describe("automatic production analytics", () => {
   beforeEach(() => {
     localStorage.clear();
     document.head.querySelector("#google-analytics-script")?.remove();
@@ -18,52 +14,41 @@ describe("analytics consent", () => {
 
   afterEach(() => cleanup());
 
-  it("does not offer or load analytics away from the production hostname", async () => {
+  it("does not load analytics away from the production hostname", async () => {
     render(<SiteAnalytics hostname="localhost" />);
-    await waitFor(() => expect(screen.queryByText("Optional analytics")).not.toBeInTheDocument());
     expect(document.querySelector("#google-analytics-script")).toBeNull();
     expect(document.querySelector("#microsoft-clarity-script")).toBeNull();
   });
 
-  it("keeps optional analytics disabled when the visitor rejects it", async () => {
+  it("loads GA4 and Clarity automatically without rendering consent controls", async () => {
     render(<SiteAnalytics hostname="enchantmentcalculator.com" />);
-    fireEvent.click(await screen.findByRole("button", { name: "Only necessary" }));
-
-    expect(localStorage.getItem(analyticsConsentStorageKey)).toBe("rejected");
-    const dataLayer = (window as Window & { dataLayer?: unknown[][] }).dataLayer;
-    expect(dataLayer?.[0]).toEqual(["consent", "default", {
-      ad_storage: "denied",
-      ad_user_data: "denied",
-      ad_personalization: "denied",
-      analytics_storage: "denied",
-    }]);
+    await waitFor(() => {
+      expect(document.querySelector("#google-analytics-script")).not.toBeNull();
+      expect(document.querySelector("#microsoft-clarity-script")).not.toBeNull();
+    });
+    expect(document.querySelector<HTMLScriptElement>("#google-analytics-script")?.src).toContain(
+      "googletagmanager.com/gtag/js?id=G-9NRJ5W0EF6",
+    );
+    expect(document.querySelector<HTMLScriptElement>("#microsoft-clarity-script")?.src).toContain(
+      "clarity.ms/tag/y3tct90a9r",
+    );
+    expect((window as Window & { dataLayer?: unknown[][] }).dataLayer).toContainEqual([
+      "config",
+      "G-9NRJ5W0EF6",
+    ]);
     expect(screen.queryByText("Optional analytics")).not.toBeInTheDocument();
-    expect(document.querySelector("#google-analytics-script")).toBeNull();
-    expect(document.querySelector("#microsoft-clarity-script")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Allow analytics" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Only necessary" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Cookie settings" })).not.toBeInTheDocument();
   });
 
-  it("loads both services only after consent and lets the visitor reopen settings", async () => {
-    render(
-      <>
-        <AnalyticsSettingsButton hostname="enchantmentcalculator.com" />
-        <SiteAnalytics hostname="enchantmentcalculator.com" />
-      </>,
-    );
-    fireEvent.click(await screen.findByRole("button", { name: "Allow analytics" }));
+  it("ignores a legacy rejection and still loads both services", async () => {
+    localStorage.setItem("anvilpilot:analytics-consent:v1", "rejected");
+    render(<SiteAnalytics hostname="enchantmentcalculator.com" />);
 
-    expect(localStorage.getItem(analyticsConsentStorageKey)).toBe("accepted");
-    expect(document.querySelector("#google-analytics-script")).not.toBeNull();
-    expect(document.querySelector("#microsoft-clarity-script")).not.toBeNull();
-
-    fireEvent.click(await screen.findByRole("button", { name: "Cookie settings" }));
-    expect(await screen.findByText("Optional analytics")).toBeVisible();
-
-    fireEvent.click(screen.getByRole("button", { name: "Only necessary" }));
-    const clarity = (window as Window & { clarity?: { q?: unknown[][] } }).clarity;
-    expect(clarity?.q).toContainEqual(["consentv2", {
-      ad_Storage: "denied",
-      analytics_Storage: "denied",
-    }]);
-    expect(clarity?.q).toContainEqual(["consent", false]);
+    await waitFor(() => {
+      expect(document.querySelector("#google-analytics-script")).not.toBeNull();
+      expect(document.querySelector("#microsoft-clarity-script")).not.toBeNull();
+    });
   });
 });

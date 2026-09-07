@@ -1,6 +1,6 @@
 # Product analytics events
 
-AnvilPilot's calculator events are consent-aware, production-only GA4 events. They measure the product funnel without sending a plan, its inputs, or its result steps.
+AnvilPilot's calculator events are production-only GA4 events. They measure the product funnel without sending a plan, its inputs, or its result steps.
 
 ## Event catalog
 
@@ -28,15 +28,14 @@ Every product event is rebuilt from this fixed allowlist at dispatch time. Extra
 | `book_count_bucket` | `0`, `1-3`, `4-6`, `7-8`, `9+` | Coarse count of Quick enchantment books or Inventory sacrifices. |
 | `example_type` | `maxed_sword`, `fortune_pickaxe`, `survival_boots` | Optional; present only for a valid `example_loaded` event. |
 
-## Consent and dispatch behavior
+## Dispatch behavior
 
 `trackProductEvent()` returns without throwing and sends nothing unless all of these conditions are true:
 
 1. It is running in a browser on the exact production hostname `enchantmentcalculator.com`.
-2. LocalStorage already contains the `accepted` value under the consent key owned by `SiteAnalytics`.
-3. `window.gtag` is available.
+2. `window.gtag` is available.
 
-Rejection, missing consent, blocked LocalStorage, localhost, server rendering, and an unavailable `gtag` all suppress the event. Events are not queued, persisted, backfilled, or replayed after consent is granted.
+GA4 and Microsoft Clarity load automatically on the production hostname. There is no in-site consent gate or Cookie settings control. Localhost, server rendering, and an unavailable `gtag` suppress product events. Events are not queued, persisted, or backfilled.
 
 ## Privacy exclusions
 
@@ -54,7 +53,7 @@ Only the fixed categorical parameters documented above are eligible for dispatch
 
 1. Open the GA4 property for `G-9NRJ5W0EF6`, then open **Admin → DebugView**.
 2. Enable the Google Analytics Debugger browser extension for a temporary verification session.
-3. Open `https://enchantmentcalculator.com/`, choose **Allow analytics**, and reload once so the accepted choice is already present.
+3. Open `https://enchantmentcalculator.com/`; analytics loads automatically on the production hostname.
 4. Create a meaningful Quick draft, calculate it, load one example, and successfully use Copy Steps or Copy Share Link.
 5. Switch to Inventory and create a meaningful Inventory draft to verify the second `calculator_start` and `planner_mode_change`.
 6. In DebugView, confirm event order and inspect each product event's parameters. Confirm that only the allowlisted categorical fields appear and that no plan-level data is present.

@@ -1,4 +1,3 @@
-import { analyticsConsentStorageKey } from "@/components/site-analytics";
 import type { PlanStateV1, SolveResult } from "@/domain/enchanting/types";
 
 export type ProductAnalyticsEventName =
@@ -155,14 +154,6 @@ export function trackProductEvent(
 ): boolean {
   if (typeof window === "undefined") return false;
   if (window.location.hostname !== productionHostname) return false;
-
-  try {
-    if (window.localStorage.getItem(analyticsConsentStorageKey) !== "accepted") {
-      return false;
-    }
-  } catch {
-    return false;
-  }
 
   const analyticsWindow = window as ProductAnalyticsWindow;
   if (typeof analyticsWindow.gtag !== "function") return false;

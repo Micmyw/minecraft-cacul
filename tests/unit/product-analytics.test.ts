@@ -1,8 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
-  analyticsConsentStorageKey,
-} from "@/components/site-analytics";
-import {
   bucketBookCount,
   trackProductEvent,
   type ProductAnalyticsParams,
@@ -18,17 +15,15 @@ const allowedParams: ProductAnalyticsParams = {
 
 function stubAnalyticsWindow(options: {
   hostname?: string;
-  consent?: string | null;
   gtag?: ReturnType<typeof vi.fn> | undefined;
-  readConsent?: () => string | null;
+  readStorage?: () => string | null;
 } = {}) {
   const {
     hostname = "enchantmentcalculator.com",
-    consent = "accepted",
-    readConsent,
+    readStorage,
   } = options;
   const gtag = Object.hasOwn(options, "gtag") ? options.gtag : vi.fn();
-  const getItem = readConsent ?? vi.fn(() => consent);
+  const getItem = vi.fn(readStorage ?? (() => null));
   vi.stubGlobal("window", {
     location: { hostname },
     localStorage: { getItem },
@@ -42,14 +37,15 @@ afterEach(() => {
 });
 
 describe("product analytics privacy boundary", () => {
-  it("does not dispatch without accepted consent or after rejection", () => {
-    const missing = stubAnalyticsWindow({ consent: null });
-    expect(trackProductEvent("calculation_success", allowedParams)).toBe(false);
-    expect(missing.gtag).not.toHaveBeenCalled();
-
-    const rejected = stubAnalyticsWindow({ consent: "rejected" });
-    expect(trackProductEvent("calculation_success", allowedParams)).toBe(false);
-    expect(rejected.gtag).not.toHaveBeenCalled();
+  it("dispatches on production without reading consent from LocalStorage", () => {
+    const { getItem, gtag } = stubAnalyticsWindow({
+      readStorage: () => {
+        throw new DOMException("Blocked", "SecurityError");
+      },
+    });
+    expect(trackProductEvent("calculation_success", allowedParams)).toBe(true);
+    expect(getItem).not.toHaveBeenCalled();
+    expect(gtag).toHaveBeenCalledOnce();
   });
 
   it("does not dispatch on localhost or when gtag is unavailable", () => {
@@ -62,7 +58,7 @@ describe("product analytics privacy boundary", () => {
   });
 
   it("sends one event with only the controlled parameter properties", () => {
-    const { getItem, gtag } = stubAnalyticsWindow();
+    const { gtag } = stubAnalyticsWindow();
     const unsafeInput = {
       ...allowedParams,
       example_type: "maxed_sword",
@@ -71,7 +67,6 @@ describe("product analytics privacy boundary", () => {
     } as ProductAnalyticsParams;
 
     expect(trackProductEvent("example_loaded", unsafeInput)).toBe(true);
-    expect(getItem).toHaveBeenCalledWith(analyticsConsentStorageKey);
     expect(gtag).toHaveBeenCalledTimes(1);
     expect(gtag).toHaveBeenCalledWith("event", "example_loaded", {
       planner_mode: "quick",
@@ -83,16 +78,8 @@ describe("product analytics privacy boundary", () => {
     });
   });
 
-  it("returns false without throwing when window or LocalStorage is unavailable", () => {
+  it("returns false without throwing when window is unavailable", () => {
     vi.stubGlobal("window", undefined);
-    expect(() => trackProductEvent("calculator_start", allowedParams)).not.toThrow();
-    expect(trackProductEvent("calculator_start", allowedParams)).toBe(false);
-
-    stubAnalyticsWindow({
-      readConsent: () => {
-        throw new DOMException("Blocked", "SecurityError");
-      },
-    });
     expect(() => trackProductEvent("calculator_start", allowedParams)).not.toThrow();
     expect(trackProductEvent("calculator_start", allowedParams)).toBe(false);
   });

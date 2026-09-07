@@ -4,7 +4,6 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { analyticsConsentStorageKey } from "@/components/site-analytics";
 import type { SolveResult } from "@/domain/enchanting/types";
 import { CalculatorShell } from "@/features/planner/calculator-shell";
 import { CalculateButton } from "@/features/planner/calculate-button";
@@ -343,7 +342,6 @@ describe("calculator product analytics", () => {
   beforeEach(() => {
     window.history.replaceState(null, "", "/");
     localStorage.clear();
-    localStorage.setItem(analyticsConsentStorageKey, "accepted");
     (window as Window & { gtag?: ReturnType<typeof vi.fn> }).gtag = vi.fn();
     workerMocks.getCatalog.mockResolvedValue(catalog);
     workerMocks.solve.mockResolvedValue(successResult);

@@ -65,7 +65,7 @@ of scope.
 
 The first post-launch validation release adds:
 
-- consent-aware calculator funnel events, documented in
+- production-only calculator funnel events, documented in
   [`docs/analytics-events.md`](docs/analytics-events.md);
 - three solver-verified Quick Plan examples: Maxed Sword, Fortune Pickaxe, and
   Survival Boots;
