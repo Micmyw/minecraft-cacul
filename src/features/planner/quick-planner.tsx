@@ -16,7 +16,12 @@ export function QuickPlanner({
   onLoadExample: (example: ExamplePlan) => void;
 }) {
   return (
-    <div className="planner-form" role="tabpanel">
+    <div
+      id="planner-panel-quick"
+      className="planner-form"
+      role="tabpanel"
+      aria-labelledby="planner-tab-quick"
+    >
       <ExamplePlanButtons onLoad={onLoadExample} />
       <div className="form-section">
         <div className="section-heading">

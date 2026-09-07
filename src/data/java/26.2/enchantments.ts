@@ -6,6 +6,12 @@ export type EnchantmentDefinition = {
   maxLevel: number;
   anvilCost: number;
   bookCost: number;
+  weight: 1 | 2 | 5 | 10;
+  primaryItemsRef: string | null;
+  treasure: boolean;
+  curse: boolean;
+  tradeable: boolean;
+  inEnchantingTable: boolean;
   supportedItemIds: readonly ItemId[];
   exclusiveSet: readonly EnchantmentId[];
   incompatibleWith: readonly EnchantmentId[];
@@ -28,6 +34,50 @@ const meleeWeapon = ["sword", "spear"];
 const damage = ["sharpness", "smite", "bane_of_arthropods", "impaling", "density", "breach"];
 const armorProtection = ["protection", "blast_protection", "fire_protection", "projectile_protection"];
 
+const weight10 = new Set([
+  "efficiency", "piercing", "power", "protection", "sharpness",
+]);
+const weight5 = new Set([
+  "bane_of_arthropods", "density", "feather_falling", "fire_protection",
+  "knockback", "loyalty", "lunge", "projectile_protection", "quick_charge",
+  "smite", "unbreaking",
+]);
+const weight2 = new Set([
+  "aqua_affinity", "blast_protection", "breach", "depth_strider", "fire_aspect",
+  "flame", "fortune", "frost_walker", "impaling", "looting", "luck_of_the_sea",
+  "lure", "mending", "multishot", "punch", "respiration", "riptide",
+  "sweeping_edge", "wind_burst",
+]);
+const treasureEnchantments = new Set([
+  "binding_curse", "frost_walker", "mending", "soul_speed", "swift_sneak",
+  "vanishing_curse", "wind_burst",
+]);
+const curseEnchantments = new Set(["binding_curse", "vanishing_curse"]);
+const notTradeableEnchantments = new Set(["soul_speed", "swift_sneak", "wind_burst"]);
+// This is intentionally a separate transcription of the official
+// `in_enchanting_table` tag rather than an inference from the treasure tag.
+const notInEnchantingTable = new Set([
+  "binding_curse", "frost_walker", "mending", "soul_speed", "swift_sneak",
+  "vanishing_curse", "wind_burst",
+]);
+const meleePrimaryEnchantments = new Set([
+  "bane_of_arthropods", "fire_aspect", "sharpness", "smite",
+]);
+
+function enchantmentWeight(id: string): 1 | 2 | 5 | 10 {
+  if (weight10.has(id)) return 10;
+  if (weight5.has(id)) return 5;
+  if (weight2.has(id)) return 2;
+  return 1;
+}
+
+function primaryItemsRef(id: string): string | null {
+  if (meleePrimaryEnchantments.has(id)) {
+    return "#minecraft:enchantable/melee_weapon";
+  }
+  return id === "thorns" ? "#minecraft:enchantable/chest_armor" : null;
+}
+
 function definition(
   id: string,
   name: string,
@@ -42,6 +92,12 @@ function definition(
     maxLevel,
     anvilCost,
     bookCost: Math.max(1, Math.floor(anvilCost / 2)),
+    weight: enchantmentWeight(id),
+    primaryItemsRef: primaryItemsRef(id),
+    treasure: treasureEnchantments.has(id),
+    curse: curseEnchantments.has(id),
+    tradeable: !notTradeableEnchantments.has(id),
+    inEnchantingTable: !notInEnchantingTable.has(id),
     supportedItemIds,
     exclusiveSet: incompatibleWith,
     incompatibleWith,

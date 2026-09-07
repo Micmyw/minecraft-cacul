@@ -17,6 +17,7 @@ export function SiteHeader() {
         </Link>
         <nav aria-label="Primary navigation">
           <Link href="/#calculator">Calculator</Link>
+          <Link href="/minecraft-enchantments">Enchantments</Link>
           <Link href="/about">About</Link>
         </nav>
       </div>

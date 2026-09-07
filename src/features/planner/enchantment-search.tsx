@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { EnchantmentLevel } from "@/domain/enchanting/types";
 import type { CatalogSnapshot } from "@/workers/protocol";
 
@@ -22,8 +22,12 @@ export function EnchantmentSearch({
   onSelect,
 }: EnchantmentSearchProps) {
   const id = useId();
+  const rootRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [activeEnchantmentId, setActiveEnchantmentId] = useState<string | null>(
+    null,
+  );
   const selectedIds = new Set(selected.map((entry) => entry.enchantmentId));
   const blockedIds = new Set(
     selected.flatMap(
@@ -47,9 +51,56 @@ export function EnchantmentSearch({
     });
   const disabled = !allowAll && !itemId;
   const resultsId = `${id}-results`;
+  const enabledResults = available.filter(
+    (enchantment) => !blockedIds.has(enchantment.id),
+  );
+  const activeResult = enabledResults.find(
+    (enchantment) => enchantment.id === activeEnchantmentId,
+  );
+  const activeOptionId = activeResult
+    ? `${id}-option-${activeResult.id}`
+    : undefined;
+
+  useEffect(() => {
+    const closeOnOutsidePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && !rootRef.current?.contains(target)) {
+        setOpen(false);
+        setActiveEnchantmentId(null);
+      }
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsidePointerDown);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointerDown);
+    };
+  }, []);
+
+  const closeResults = () => {
+    setOpen(false);
+    setActiveEnchantmentId(null);
+  };
+
+  const selectEnchantment = (enchantmentId: string) => {
+    onSelect(enchantmentId);
+    setQuery("");
+    closeResults();
+  };
 
   return (
-    <div className="enchantment-search">
+    <div
+      ref={rootRef}
+      className="enchantment-search"
+      onBlur={(event) => {
+        const nextTarget = event.relatedTarget;
+        if (
+          !nextTarget ||
+          !event.currentTarget.contains(nextTarget as Node)
+        ) {
+          closeResults();
+        }
+      }}
+    >
       <label className="field-label" htmlFor={`${id}-input`}>
         Add enchantment
       </label>
@@ -59,17 +110,56 @@ export function EnchantmentSearch({
         value={query}
         disabled={disabled}
         autoComplete="off"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={open && !disabled}
         aria-controls={resultsId}
-        onFocus={() => setOpen(true)}
+        aria-activedescendant={open ? activeOptionId : undefined}
+        onFocus={() => {
+          setOpen(true);
+          setActiveEnchantmentId(null);
+        }}
         onChange={(event) => {
           setQuery(event.target.value);
           setOpen(true);
+          setActiveEnchantmentId(null);
         }}
         onKeyDown={(event) => {
-          if (event.key !== "Escape") return;
-          event.preventDefault();
-          setQuery("");
-          setOpen(false);
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            setOpen(true);
+
+            if (enabledResults.length === 0) {
+              setActiveEnchantmentId(null);
+              return;
+            }
+
+            const currentIndex = enabledResults.findIndex(
+              (enchantment) => enchantment.id === activeEnchantmentId,
+            );
+            const nextIndex =
+              event.key === "ArrowDown"
+                ? currentIndex < enabledResults.length - 1
+                  ? currentIndex + 1
+                  : 0
+                : currentIndex > 0
+                  ? currentIndex - 1
+                  : enabledResults.length - 1;
+            setActiveEnchantmentId(enabledResults[nextIndex].id);
+            return;
+          }
+
+          if (event.key === "Enter" && open && activeResult) {
+            event.preventDefault();
+            selectEnchantment(activeResult.id);
+            return;
+          }
+
+          if (event.key === "Escape") {
+            event.preventDefault();
+            setQuery("");
+            closeResults();
+          }
         }}
       />
 
@@ -79,6 +169,7 @@ export function EnchantmentSearch({
         <div
           id={resultsId}
           className="enchantment-search-results"
+          role="listbox"
           aria-label="Available enchantments"
         >
           {available.length === 0 ? (
@@ -89,14 +180,20 @@ export function EnchantmentSearch({
               return (
                 <button
                   key={enchantment.id}
+                  id={`${id}-option-${enchantment.id}`}
                   type="button"
                   className="enchantment-search-result"
+                  role="option"
+                  tabIndex={-1}
+                  aria-selected={activeEnchantmentId === enchantment.id}
+                  aria-disabled={incompatible}
                   disabled={incompatible}
-                  onClick={() => {
-                    onSelect(enchantment.id);
-                    setQuery("");
-                    setOpen(false);
+                  onMouseMove={() => {
+                    if (!incompatible) {
+                      setActiveEnchantmentId(enchantment.id);
+                    }
                   }}
+                  onClick={() => selectEnchantment(enchantment.id)}
                 >
                   <strong>{enchantment.name}</strong>
                   <span>

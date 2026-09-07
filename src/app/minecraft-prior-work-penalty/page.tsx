@@ -53,7 +53,12 @@ export default function PriorWorkPenaltyPage() {
           prior-work count of five already adds 31 penalty levels before the transferred
           enchantments are considered.
         </p>
-        <div className="guide-table-scroll">
+        <div
+          className="guide-table-scroll"
+          role="region"
+          aria-label="Scrollable prior-work penalty table"
+          tabIndex={0}
+        >
           <table aria-label="Prior-work penalty values">
             <thead><tr><th scope="col">Prior work</th><th scope="col">Penalty</th></tr></thead>
             <tbody>

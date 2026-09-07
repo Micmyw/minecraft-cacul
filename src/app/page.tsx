@@ -51,6 +51,14 @@ export default function Home() {
             <span>{enchantments.length} enchantments</span>
             <span>Verified {dataMetadata.verifiedAt}</span>
           </div>
+          <div className="hero-actions">
+            <Link className="hero-primary-action" href="/#calculator">
+              Start Calculating
+            </Link>
+            <Link className="hero-secondary-action" href="/minecraft-enchantments">
+              Browse Enchantments
+            </Link>
+          </div>
         </div>
         <div className="hero-mark" aria-hidden="true">
           <svg viewBox="0 0 260 180">
@@ -126,6 +134,7 @@ export default function Home() {
           <span className="section-kicker">DEEPER GUIDES</span>
           <h2>Learn the anvil mechanics</h2>
           <div className="guide-discovery-links">
+            <Link href="/minecraft-enchantments"><strong>Minecraft Enchantments Reference</strong><span>Browse all 43 Java 26.2 enchantments, item groups, costs, availability, and conflicts.</span></Link>
             <Link href="/minecraft-prior-work-penalty"><strong>Prior Work Penalty</strong><span>See the 2^n − 1 table and how combined items inherit their next prior-work count.</span></Link>
             <Link href="/minecraft-anvil-too-expensive"><strong>Why the Anvil Says Too Expensive</strong><span>Understand the 40-level single-step limit and which order problems can be fixed.</span></Link>
           </div>

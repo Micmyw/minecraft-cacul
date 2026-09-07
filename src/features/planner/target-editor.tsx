@@ -1,4 +1,5 @@
 import { MAX_PRIOR_WORK, type Ingredient } from "@/domain/enchanting/types";
+import { priorWorkPenalty } from "@/domain/enchanting/prior-work";
 import type { CatalogSnapshot } from "@/workers/protocol";
 import { EnchantmentPicker } from "./enchantment-picker";
 
@@ -51,6 +52,9 @@ export function TargetEditor({
           ),
         })}
       />
+      <p className="prior-work-preview" role="note">
+        Adds {priorWorkPenalty(target.priorWork)} penalty levels to the next anvil operation.
+      </p>
       <EnchantmentPicker
         catalog={catalog}
         itemId={target.itemId}

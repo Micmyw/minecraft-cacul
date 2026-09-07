@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -75,78 +75,84 @@ afterEach(() => cleanup());
 describe("searchable enchantment picker", () => {
   it("filters by case-insensitive display-name substring in alphabetic order", async () => {
     renderSearch();
-    const input = screen.getByRole("searchbox", { name: "Add enchantment" });
+    const input = screen.getByRole("combobox", { name: "Add enchantment" });
     await userEvent.click(input);
-    expect(screen.getAllByRole("button").map((button) => button.textContent)).toEqual([
+    expect(screen.getAllByRole("option").map((option) => option.textContent)).toEqual([
       "MendingMax level: I",
       "SharpnessMax level: V",
       "SmiteMax level: V",
     ]);
 
     await userEvent.type(input, "MiTe");
-    expect(screen.getByRole("button", { name: /Smite.*Max level: V/i })).toBeEnabled();
-    expect(screen.queryByRole("button", { name: /Sharpness/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Smite.*Max level: V/i })).toHaveAttribute("aria-disabled", "false");
+    expect(screen.queryByRole("option", { name: /Sharpness/i })).not.toBeInTheDocument();
   });
 
   it("excludes selected entries and disables incompatible results", async () => {
     renderSearch({ selected: [{ enchantmentId: "sharpness", level: 5 }] });
-    await userEvent.click(screen.getByRole("searchbox", { name: "Add enchantment" }));
+    await userEvent.click(screen.getByRole("combobox", { name: "Add enchantment" }));
 
-    expect(screen.queryByRole("button", { name: /Sharpness/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Smite.*Incompatible/i })).toBeDisabled();
+    expect(screen.queryByRole("option", { name: /Sharpness/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("option", { name: /Smite.*Incompatible/i })).toHaveAttribute("aria-disabled", "true");
   });
 
   it("filters to the target item unless allowAll exposes mixed-book options", async () => {
     const first = renderSearch();
-    await userEvent.click(screen.getByRole("searchbox", { name: "Add enchantment" }));
-    expect(screen.queryByRole("button", { name: /Power/i })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("combobox", { name: "Add enchantment" }));
+    expect(screen.queryByRole("option", { name: /Power/i })).not.toBeInTheDocument();
     cleanup();
 
     renderSearch({ allowAll: true });
-    await userEvent.click(screen.getByRole("searchbox", { name: "Add enchantment" }));
-    expect(screen.getByRole("button", { name: /Power.*Max level: V/i })).toBeEnabled();
+    await userEvent.click(screen.getByRole("combobox", { name: "Add enchantment" }));
+    expect(screen.getByRole("option", { name: /Power.*Max level: V/i })).toHaveAttribute("aria-disabled", "false");
     expect(first.onSelect).not.toHaveBeenCalled();
   });
 
   it("shows the no-target and no-match states", async () => {
     renderSearch({ itemId: null });
-    expect(screen.getByRole("searchbox", { name: "Add enchantment" })).toBeDisabled();
+    expect(screen.getByRole("combobox", { name: "Add enchantment" })).toBeDisabled();
     expect(screen.getByText("Choose a target item first.")).toBeVisible();
     cleanup();
 
     renderSearch();
-    const input = screen.getByRole("searchbox", { name: "Add enchantment" });
+    const input = screen.getByRole("combobox", { name: "Add enchantment" });
     await userEvent.type(input, "not in catalog");
     expect(screen.getByText("No enchantments match your search.")).toBeVisible();
   });
 
   it("clears and closes on Escape", async () => {
     renderSearch();
-    const input = screen.getByRole("searchbox", { name: "Add enchantment" });
+    const input = screen.getByRole("combobox", { name: "Add enchantment" });
     await userEvent.type(input, "sharp");
-    expect(screen.getByRole("button", { name: /Sharpness/i })).toBeVisible();
+    expect(screen.getByRole("option", { name: /Sharpness/i })).toBeVisible();
 
     await userEvent.keyboard("{Escape}");
     expect(input).toHaveValue("");
-    expect(screen.queryByRole("button", { name: /Sharpness/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: /Sharpness/i })).not.toBeInTheDocument();
   });
 
-  it.each([
-    ["Enter", "{Enter}"],
-    ["Space", " "],
-  ])("selects the focused result with %s and clears the query", async (_, key) => {
+  it("implements active-descendant arrow navigation and Enter selection", async () => {
     const onSelect = vi.fn();
     renderSearch({ onSelect });
     const user = userEvent.setup();
-    const input = screen.getByRole("searchbox", { name: "Add enchantment" });
+    const input = screen.getByRole("combobox", { name: "Add enchantment" });
     await user.type(input, "sharp");
-    await user.tab();
-    expect(screen.getByRole("button", { name: /Sharpness/i })).toHaveFocus();
-    await user.keyboard(key);
+    expect(input).toHaveAttribute("aria-expanded", "true");
+    const listbox = screen.getByRole("listbox", { name: "Available enchantments" });
+    const option = within(listbox).getByRole("option", { name: /Sharpness/i });
+    expect(option).toHaveAttribute("aria-selected", "false");
+    expect(option).toHaveAttribute("tabindex", "-1");
+
+    await user.keyboard("{ArrowDown}");
+    expect(input).toHaveFocus();
+    expect(input).toHaveAttribute("aria-activedescendant", option.id);
+    expect(option).toHaveAttribute("aria-selected", "true");
+    await user.keyboard("{Enter}");
 
     expect(onSelect).toHaveBeenCalledWith("sharpness");
     expect(input).toHaveValue("");
-    expect(screen.queryByRole("button", { name: /Sharpness/i })).not.toBeInTheDocument();
+    expect(input).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("option", { name: /Sharpness/i })).not.toBeInTheDocument();
   });
 
   it("keeps the parent target-change cleanup behavior", async () => {

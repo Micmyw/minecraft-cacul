@@ -30,7 +30,7 @@ describe("guide page SEO and content contracts", () => {
     expect(within(table).getByRole("row", { name: "6 63" })).toBeVisible();
     expect(screen.getByRole("heading", { level: 3, name: "Least total levels" })).toBeVisible();
     expect(screen.getByRole("heading", { level: 3, name: "Preserve future work" })).toBeVisible();
-    expect(screen.getByText(/Verified for Java Edition 26.2 on 2026-08-17/i)).toBeVisible();
+    expect(screen.getByText(/Verified for Java Edition 26.2 on 2026-09-07/i)).toBeVisible();
     expect(screen.getByRole("link", { name: "Open the Minecraft Enchantment Calculator" })).toHaveAttribute("href", "/#calculator");
     expect(screen.getByRole("link", { name: /Too Expensive/i })).toHaveAttribute("href", "/minecraft-anvil-too-expensive");
     expect(document.querySelectorAll("details")).toHaveLength(4);
@@ -50,19 +50,20 @@ describe("guide page SEO and content contracts", () => {
     expect(screen.getByText(/single anvil operation costs 40 levels or more/i)).toBeVisible();
     expect(screen.getByText(/does not guarantee that every case can be fixed/i)).toBeVisible();
     expect(screen.getByText(/Highest optimized step/i)).toBeVisible();
-    expect(screen.getByText(/Verified for Java Edition 26.2 on 2026-08-17/i)).toBeVisible();
+    expect(screen.getByText(/Verified for Java Edition 26.2 on 2026-09-07/i)).toBeVisible();
     expect(screen.getByRole("link", { name: "Open the Minecraft Enchantment Calculator" })).toHaveAttribute("href", "/#calculator");
     expect(screen.getByRole("link", { name: /Prior Work Penalty/i })).toHaveAttribute("href", "/minecraft-prior-work-penalty");
     expect(document.querySelectorAll("details")).toHaveLength(4);
   });
 
-  it("keeps the homepage title fixed and publishes exactly four sitemap URLs", () => {
+  it("keeps the homepage title fixed and publishes the reference hub in the sitemap", () => {
     expect(homeMetadata.title).toBe("Minecraft Enchantment Calculator – Best Anvil Order");
     expect(sitemap().map((entry) => entry.url)).toEqual([
       "https://enchantmentcalculator.com",
       "https://enchantmentcalculator.com/about",
       "https://enchantmentcalculator.com/minecraft-prior-work-penalty",
       "https://enchantmentcalculator.com/minecraft-anvil-too-expensive",
+      "https://enchantmentcalculator.com/minecraft-enchantments",
     ]);
   });
 
@@ -70,5 +71,6 @@ describe("guide page SEO and content contracts", () => {
     render(<SiteFooter />);
     expect(screen.getByRole("link", { name: "Prior Work Penalty" })).toHaveAttribute("href", "/minecraft-prior-work-penalty");
     expect(screen.getByRole("link", { name: "Too Expensive" })).toHaveAttribute("href", "/minecraft-anvil-too-expensive");
+    expect(screen.getByRole("link", { name: "Enchantments" })).toHaveAttribute("href", "/minecraft-enchantments");
   });
 });

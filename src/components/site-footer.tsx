@@ -12,6 +12,7 @@ export function SiteFooter() {
         </div>
         <nav aria-label="Footer navigation">
           <Link href="/about">About</Link>
+          <Link href="/minecraft-enchantments">Enchantments</Link>
           <Link href="/minecraft-prior-work-penalty">Prior Work Penalty</Link>
           <Link href="/minecraft-anvil-too-expensive">Too Expensive</Link>
           <Link href="/privacy">Privacy</Link>

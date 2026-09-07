@@ -2,8 +2,9 @@ import type { MetadataRoute } from "next";
 import { absoluteUrl } from "@/lib/seo";
 import { siteConfig } from "@/lib/site-config";
 
-const contentLastModified = new Date("2026-08-17T00:00:00.000Z");
-const guideLastModified = new Date("2026-08-20T00:00:00.000Z");
+const contentLastModified = new Date("2026-09-07T00:00:00.000Z");
+const guideLastModified = new Date("2026-09-07T00:00:00.000Z");
+const referenceLastModified = new Date("2026-09-07T00:00:00.000Z");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -30,6 +31,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: guideLastModified,
       changeFrequency: "monthly",
       priority: 0.8,
+    },
+    {
+      url: absoluteUrl("/minecraft-enchantments"),
+      lastModified: referenceLastModified,
+      changeFrequency: "monthly",
+      priority: 0.9,
     },
   ];
 }

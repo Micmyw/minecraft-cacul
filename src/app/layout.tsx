@@ -47,10 +47,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
+    <html
+      lang="en"
+      className={`${displayFont.variable} ${bodyFont.variable}`}
+      data-scroll-behavior="smooth"
+    >
       <body>
+        <a className="skip-link" href="#main-content">Skip to main content</a>
         <SiteHeader />
-        <main>{children}</main>
+        <main id="main-content" tabIndex={-1}>{children}</main>
         <SiteFooter />
         <SiteAnalytics />
       </body>

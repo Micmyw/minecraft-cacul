@@ -2,14 +2,17 @@
 
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { analyticsConsentStorageKey } from "@/components/site-analytics";
 import type { SolveResult } from "@/domain/enchanting/types";
 import { CalculatorShell } from "@/features/planner/calculator-shell";
+import { CalculateButton } from "@/features/planner/calculate-button";
 import { EnchantmentPicker } from "@/features/planner/enchantment-picker";
 import { PlannerTabs } from "@/features/planner/planner-tabs";
 import { ResultSummary } from "@/features/planner/result-summary";
 import { ResultSteps } from "@/features/planner/result-steps";
+import { TargetEditor } from "@/features/planner/target-editor";
 import { formatStepsForClipboard } from "@/features/planner/planner-format";
 import type { CombineStep } from "@/domain/enchanting/types";
 import {
@@ -122,6 +125,60 @@ describe("planner UI", () => {
     expect(onChange).toHaveBeenCalledWith("inventory");
   });
 
+  it("connects tabs to their panels and supports arrow-key activation", async () => {
+    function Harness() {
+      const [mode, setMode] = useState<"quick" | "inventory">("quick");
+      return <PlannerTabs value={mode} onChange={setMode} />;
+    }
+
+    const user = userEvent.setup();
+    render(<Harness />);
+    const quick = screen.getByRole("tab", { name: "Quick Plan" });
+    const inventory = screen.getByRole("tab", { name: "Inventory Plan" });
+    expect(quick).toHaveAttribute("aria-controls", "planner-panel-quick");
+    expect(inventory).toHaveAttribute("aria-controls", "planner-panel-inventory");
+    expect(quick).toHaveAttribute("tabindex", "0");
+    expect(inventory).toHaveAttribute("tabindex", "-1");
+
+    quick.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(inventory).toHaveAttribute("aria-selected", "true");
+    expect(inventory).toHaveFocus();
+  });
+
+  it("exposes calculation progress to assistive technology", () => {
+    render(
+      <CalculateButton
+        disabled={false}
+        calculating
+        progress={0.42}
+        onCalculate={() => {}}
+        onCancel={() => {}}
+      />,
+    );
+    expect(screen.getByRole("progressbar", { name: "Calculation progress" })).toHaveAttribute(
+      "aria-valuenow",
+      "42",
+    );
+  });
+
+  it("previews the next prior-work penalty beside inventory inputs", () => {
+    render(
+      <TargetEditor
+        target={{
+          id: "target",
+          kind: "target",
+          itemId: "sword",
+          enchantments: [],
+          priorWork: 3,
+        }}
+        catalog={catalog}
+        onChange={() => {}}
+      />,
+    );
+    expect(screen.getByText("Adds 7 penalty levels to the next anvil operation.")).toBeVisible();
+  });
+
   it("adds the maximum applicable enchantment level", async () => {
     const onChange = vi.fn();
     render(
@@ -134,8 +191,8 @@ describe("planner UI", () => {
       />,
     );
     await userEvent.type(screen.getByLabelText("Add enchantment"), "sharp");
-    expect(screen.queryByRole("button", { name: /Power/i })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole("button", { name: /Sharpness/i }));
+    expect(screen.queryByRole("option", { name: /Power/i })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("option", { name: /Sharpness/i }));
     expect(onChange).toHaveBeenCalledWith([
       { enchantmentId: "sharpness", level: 5 },
     ]);
@@ -166,7 +223,7 @@ describe("planner UI", () => {
     expect(screen.getByText("Uses 5 more levels to preserve future work.")).toBeInTheDocument();
   });
 
-  it("shows prior work for both slots and the result in UI and copied text", () => {
+  it("shows prior work and provides a resettable execution checklist", async () => {
     const step: CombineStep = {
       id: "step-1",
       left: {
@@ -194,7 +251,7 @@ describe("planner UI", () => {
       legalInSurvival: true,
     };
 
-    render(<ResultSteps steps={[step]} catalog={catalog} />);
+    const { rerender } = render(<ResultSteps steps={[step]} catalog={catalog} />);
     expect(screen.getByText("Left prior work: 1")).toBeInTheDocument();
     expect(screen.getByText("Right prior work: 2")).toBeInTheDocument();
     expect(screen.getByText("New prior work: 3")).toBeInTheDocument();
@@ -205,6 +262,80 @@ describe("planner UI", () => {
     expect(formatStepsForClipboard([step], catalog)).toContain(
       "New prior work: 3",
     );
+
+    expect(screen.getByRole("status")).toHaveTextContent("0 of 1 steps complete");
+    await userEvent.click(screen.getByRole("checkbox", { name: "Mark step 1 complete" }));
+    expect(screen.getByRole("status")).toHaveTextContent("1 of 1 steps complete");
+    expect(screen.getByRole("article")).toHaveClass("is-complete");
+
+    rerender(
+      <ResultSteps
+        steps={[{ ...step, levelCost: step.levelCost + 1 }]}
+        catalog={catalog}
+      />,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("0 of 1 steps complete");
+    expect(screen.getByRole("checkbox", { name: "Mark step 1 complete" })).not.toBeChecked();
+
+    await userEvent.click(screen.getByRole("checkbox", { name: "Mark step 1 complete" }));
+    await userEvent.click(screen.getByRole("button", { name: "Reset step checklist" }));
+    expect(screen.getByRole("status")).toHaveTextContent("0 of 1 steps complete");
+  });
+
+  it("separates exhaustive failure proof from a bounded-search diagnostic", () => {
+    const common = {
+      status: "no-legal-plan" as const,
+      blockingSteps: [],
+      warnings: ["Every final step costs at least 40 levels."],
+      statistics: { exploredStates: 20, elapsedMs: 2, exactSearch: true },
+    };
+
+    const { rerender } = render(
+      <ResultSummary
+        result={{ ...common, quality: "exact-optimal" }}
+        optimizeMode="least-total-levels"
+        onCopyLink={() => {}}
+        onCopySteps={() => {}}
+        onStartOver={() => {}}
+      />,
+    );
+    expect(screen.getByRole("heading", { name: "No Survival-legal plan exists" })).toBeVisible();
+    expect(screen.getByText("Exhaustive Search")).toBeVisible();
+
+    rerender(
+      <ResultSummary
+        result={{
+          ...common,
+          quality: "best-found",
+          statistics: { ...common.statistics, exactSearch: false },
+        }}
+        optimizeMode="least-total-levels"
+        onCopyLink={() => {}}
+        onCopySteps={() => {}}
+        onStartOver={() => {}}
+      />,
+    );
+    expect(screen.getByRole("heading", { name: "No Survival-legal plan found" })).toBeVisible();
+    expect(screen.getByText("Bounded Search")).toBeVisible();
+    expect(screen.getByText(/not proof that no legal order exists/i)).toBeVisible();
+  });
+
+  it("does not repeat the sequential Too Expensive warning", () => {
+    render(
+      <ResultSummary
+        result={{
+          ...successResult,
+          baselineTotalLevels: null,
+          levelsSaved: null,
+          warnings: ["The sequential order reaches Too Expensive."],
+        }}
+        optimizeMode="least-total-levels"
+        onCopyLink={() => {}}
+        onCopySteps={() => {}}
+        onStartOver={() => {}}
+      />,
+    );
+    expect(screen.getAllByText("The sequential order reaches Too Expensive.")).toHaveLength(1);
   });
 });
 
@@ -321,7 +452,7 @@ describe("calculator product analytics", () => {
     render(<CalculatorShell />);
 
     await userEvent.click(await screen.findByRole("button", { name: /Calculate/i }));
-    await screen.findByText("No Survival-legal plan");
+    await screen.findByText("No Survival-legal plan found");
 
     expect(analyticsCalls()).toContainEqual([
       "event",

@@ -24,13 +24,23 @@ export function ResultSummary({
     );
   }
   if (result.status === "no-legal-plan") {
+    const exhaustive = result.quality === "exact-optimal";
     return (
       <div className="result-summary">
         <div className="result-title-row">
-          <h3>No Survival-legal plan</h3>
-          <PlanQualityBadge quality={result.quality} />
+          <h3>
+            {exhaustive
+              ? "No Survival-legal plan exists"
+              : "No Survival-legal plan found"}
+          </h3>
+          <PlanQualityBadge quality={result.quality} context="search" />
         </div>
-        {result.warnings.map((warning) => <p className="result-warning" key={warning}>{warning}</p>)}
+        <p className="result-context">
+          {exhaustive
+            ? "The exhaustive search checked every supported merge tree for these inputs."
+            : "The bounded search did not find a legal order. This is not proof that no legal order exists; reduce prior work or split the plan and try again."}
+        </p>
+        {[...new Set(result.warnings)].map((warning) => <p className="result-warning" key={warning}>{warning}</p>)}
         <div className="result-actions">
           <button type="button" onClick={onCopyLink}>Copy Share Link</button>
           <button type="button" onClick={onCopySteps}>Copy Steps</button>
@@ -39,6 +49,13 @@ export function ResultSummary({
       </div>
     );
   }
+  const visibleWarnings = [...new Set(result.warnings)].filter(
+    (warning) =>
+      !(
+        result.baselineTotalLevels === null &&
+        warning === "The sequential order reaches Too Expensive."
+      ),
+  );
   return (
     <div className="result-summary">
       <div className="result-title-row">
@@ -58,9 +75,9 @@ export function ResultSummary({
         levelsSaved={result.levelsSaved}
         preserveMode={optimizeMode === "preserve-future-work"}
       />
-      {result.warnings.length > 0 && (
+      {visibleWarnings.length > 0 && (
         <div className="warning-list">
-          {result.warnings.map((warning) => <p key={warning}>{warning}</p>)}
+          {visibleWarnings.map((warning) => <p key={warning}>{warning}</p>)}
         </div>
       )}
       <p className="search-stat">

@@ -134,6 +134,7 @@ export function CalculatorShell() {
     setCalculating(false);
     setProgress(0);
     setResult(null);
+    setMessage("");
     setError("");
     setDrafts((current) =>
       nextState.plannerMode === "quick"
@@ -190,7 +191,13 @@ export function CalculatorShell() {
       );
       requestAnimationFrame(() => {
         resultRef.current?.focus({ preventScroll: true });
-        resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        const reduceMotion =
+          typeof window.matchMedia === "function" &&
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        resultRef.current?.scrollIntoView({
+          behavior: reduceMotion ? "auto" : "smooth",
+          block: "start",
+        });
       });
     } catch (caught) {
       if (!(caught instanceof DOMException && caught.name === "AbortError")) {
@@ -208,10 +215,13 @@ export function CalculatorShell() {
   const cancel = () => {
     clientRef.current?.cancelActive();
     setCalculating(false);
+    setError("");
     setMessage("Calculation cancelled. Your inputs are unchanged.");
   };
 
   const copyShareLink = async () => {
+    setMessage("");
+    setError("");
     try {
       const encoded = encodePlanState(state);
       const url = `${window.location.origin}${window.location.pathname}${window.location.search}#plan=${encoded}`;
@@ -226,6 +236,8 @@ export function CalculatorShell() {
 
   const copySteps = async () => {
     if (!result || !catalog || result.status === "invalid-input") return;
+    setMessage("");
+    setError("");
     const steps = result.status === "success" ? result.steps : result.blockingSteps;
     const text = formatStepsForClipboard(steps, catalog);
     try {
@@ -271,8 +283,10 @@ export function CalculatorShell() {
           onClick={() => {
             const cleared = clearSavedPlan();
             if (cleared.ok) {
+              setError("");
               setMessage("Saved plan cleared. Your current inputs remain open.");
             } else {
+              setMessage("");
               setError(cleared.error);
             }
           }}

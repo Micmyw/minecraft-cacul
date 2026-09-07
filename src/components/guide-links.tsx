@@ -13,6 +13,7 @@ export function GuideLinks({
       ) : (
         <Link href="/minecraft-prior-work-penalty">Minecraft Prior Work Penalty</Link>
       )}
+      <Link href="/minecraft-enchantments">Minecraft Enchantments Reference</Link>
       <Link href="/#calculator">Minecraft Enchantment Calculator</Link>
     </nav>
   );

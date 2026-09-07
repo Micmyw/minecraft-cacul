@@ -34,7 +34,12 @@ export function InventoryPlanner({
     onChange({ ...state, sacrifices: [...state.sacrifices, ingredient] });
   };
   return (
-    <div className="planner-form inventory-form" role="tabpanel">
+    <div
+      id="planner-panel-inventory"
+      className="planner-form inventory-form"
+      role="tabpanel"
+      aria-labelledby="planner-tab-inventory"
+    >
       <TargetEditor target={state.target} catalog={catalog} onChange={updateTarget} />
       <p className="field-hint" role="note">
         Sacrifice books must be mutually compatible unless the target item already

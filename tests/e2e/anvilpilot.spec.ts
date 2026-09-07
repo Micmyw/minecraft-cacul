@@ -41,7 +41,7 @@ function inventoryState({
 async function addEnchantment(scope: Page | Locator, name: string) {
   const search = scope.getByLabel("Add enchantment");
   await search.fill(name);
-  const result = scope.getByRole("button", {
+  const result = scope.getByRole("option", {
     name: new RegExp(`^${name}\\s+Max level:`, "u"),
   });
   await expect(result).toBeEnabled();
@@ -160,14 +160,14 @@ test("search adds an enchantment with keyboard input and exposes incompatibility
 
   const search = page.getByLabel("Add enchantment");
   await search.fill("forTUNE");
-  const fortune = page.getByRole("button", { name: /^Fortune\s+Max level:/u });
+  const fortune = page.getByRole("option", { name: /^Fortune\s+Max level:/u });
   await expect(fortune).toBeVisible();
   await fortune.focus();
   await page.keyboard.press("Enter");
   await expect(page.locator(".selected-enchantments").getByText("Fortune", { exact: true })).toBeVisible();
 
   await search.fill("silk touch");
-  await expect(page.getByRole("button", { name: /Silk Touch.*Incompatible/u })).toBeDisabled();
+  await expect(page.getByRole("option", { name: /Silk Touch.*Incompatible/u })).toBeDisabled();
   await page.keyboard.press("Escape");
   await expect(search).toHaveValue("");
   await expect(page.getByLabel("Available enchantments")).toBeHidden();
@@ -301,7 +301,7 @@ test("validation and Too Expensive diagnostics are visible", async ({ page }) =>
 
   await page.goto(`/${planHash(inventoryState({ targetPriorWork: 5, bookPriorWork: 3 }))}`);
   await page.getByRole("button", { name: "Calculate Anvil Order" }).click();
-  await expect(page.getByRole("heading", { name: "No Survival-legal plan" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "No Survival-legal plan exists" })).toBeVisible();
   await expect(
     page.locator(".result-panel").getByText("Too Expensive", { exact: true }),
   ).toBeVisible();
@@ -392,6 +392,34 @@ test("guide pages expose their SEO contract, worked content, and calculator CTA"
   }
 });
 
+test("the enchantment reference filters data and loads a verified build", async ({ page }) => {
+  const response = await page.goto("/minecraft-enchantments");
+  expect(response?.status()).toBe(200);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Minecraft Enchantments Reference" }),
+  ).toBeVisible();
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    `${SEO_ORIGIN}/minecraft-enchantments`,
+  );
+
+  await page.getByRole("combobox", { name: "Filter by item" }).selectOption("bow");
+  await expect(page.getByTestId("enchantment-ledger").getByRole("heading", { name: "Power" })).toBeVisible();
+  await expect(page.getByTestId("enchantment-ledger").getByRole("heading", { name: "Density" })).toHaveCount(0);
+
+  await page.getByRole("link", { name: "Load Maxed Sword in calculator" }).click();
+  await expect(page).toHaveURL(/\/#plan=v1\./u);
+  await expect(page.getByLabel("Target item")).toHaveValue("sword");
+  await expect(page.getByText("Sharpness", { exact: true })).toBeVisible();
+});
+
+test("the open-source license is available without runtime filesystem access", async ({ page }) => {
+  const response = await page.goto("/licenses");
+  expect(response?.status()).toBe(200);
+  await expect(page.getByRole("heading", { name: "Open Source Licenses" })).toBeVisible();
+  await expect(page.getByText(/Copyright \(c\) 2021 Cal Henderson/i)).toBeVisible();
+});
+
 test("homepage and guide pages have no horizontal overflow at 320px", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 800 });
   for (const path of [
@@ -424,6 +452,7 @@ test("server HTML, canonical metadata, sitemap, and legal robots match the SEO c
     `${SEO_ORIGIN}/about`,
     `${SEO_ORIGIN}/minecraft-prior-work-penalty`,
     `${SEO_ORIGIN}/minecraft-anvil-too-expensive`,
+    `${SEO_ORIGIN}/minecraft-enchantments`,
   ]);
   for (const noindexPath of ["privacy", "terms", "disclaimer", "licenses"]) {
     expect(sitemap).not.toContain(`<loc>${SEO_ORIGIN}/${noindexPath}</loc>`);
