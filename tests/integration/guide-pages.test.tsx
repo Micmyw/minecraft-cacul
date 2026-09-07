@@ -30,7 +30,7 @@ describe("guide page SEO and content contracts", () => {
     expect(within(table).getByRole("row", { name: "6 63" })).toBeVisible();
     expect(screen.getByRole("heading", { level: 3, name: "Least total levels" })).toBeVisible();
     expect(screen.getByRole("heading", { level: 3, name: "Preserve future work" })).toBeVisible();
-    expect(screen.getByText(/Verified for Java Edition 26.2 on 2026-09-07/i)).toBeVisible();
+    expect(screen.getByText(/Verified for Java Edition 26.2 on September 7, 2026/i)).toBeVisible();
     expect(screen.getByRole("link", { name: "Open the Minecraft Enchantment Calculator" })).toHaveAttribute("href", "/#calculator");
     expect(screen.getByRole("link", { name: /Too Expensive/i })).toHaveAttribute("href", "/minecraft-anvil-too-expensive");
     expect(document.querySelectorAll("details")).toHaveLength(4);
@@ -50,7 +50,7 @@ describe("guide page SEO and content contracts", () => {
     expect(screen.getByText(/single anvil operation costs 40 levels or more/i)).toBeVisible();
     expect(screen.getByText(/does not guarantee that every case can be fixed/i)).toBeVisible();
     expect(screen.getByText(/Highest optimized step/i)).toBeVisible();
-    expect(screen.getByText(/Verified for Java Edition 26.2 on 2026-09-07/i)).toBeVisible();
+    expect(screen.getByText(/Verified for Java Edition 26.2 on September 7, 2026/i)).toBeVisible();
     expect(screen.getByRole("link", { name: "Open the Minecraft Enchantment Calculator" })).toHaveAttribute("href", "/#calculator");
     expect(screen.getByRole("link", { name: /Prior Work Penalty/i })).toHaveAttribute("href", "/minecraft-prior-work-penalty");
     expect(document.querySelectorAll("details")).toHaveLength(4);
