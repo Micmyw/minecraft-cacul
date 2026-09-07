@@ -4,7 +4,7 @@ export const siteConfig = {
   name: "AnvilPilot",
   productName: "Minecraft Enchantment Calculator",
   url: canonicalSiteUrl,
-  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "",
+  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "contact@enchantmentcalculator.com",
   productVersion: "1.0.0",
   edition: "Java Edition",
   gameVersion: "26.2",

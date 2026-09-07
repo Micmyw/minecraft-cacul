@@ -85,15 +85,13 @@ homepage title and H1. It also does not add indexable preset or item pages.
 ### Vercel
 
 The app is designed for a standard Vercel Next.js deployment. Its canonical
-production origin is fixed at `https://enchantmentcalculator.com`. Configure
-the public contact address before the production build:
+production origin is fixed at `https://enchantmentcalculator.com`. The public
+contact address defaults to `contact@enchantmentcalculator.com`. To override it,
+set the following value before the production build:
 
 ```text
-NEXT_PUBLIC_CONTACT_EMAIL=you@example.com
+NEXT_PUBLIC_CONTACT_EMAIL=another@example.com
 ```
-
-If the contact address is missing during a production build, the build prints
-one configuration warning; the UI never emits an empty `mailto:` link.
 
 ### Cloudflare Workers
 
@@ -113,11 +111,12 @@ Build command: pnpm run build:cloudflare
 Deploy command: pnpm exec opennextjs-cloudflare deploy
 ```
 
-Set the following build variables before deploying:
+Set the Node version before deploying. You can also override the default public
+contact address:
 
 ```text
 NODE_VERSION=24
-NEXT_PUBLIC_CONTACT_EMAIL=you@example.com
+NEXT_PUBLIC_CONTACT_EMAIL=another@example.com
 ```
 
 For command-line deployment after `wrangler login`, run
